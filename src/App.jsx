@@ -17,6 +17,11 @@ function App() {
   const lastTimestamp = useRef(0);
   const touchingThreshold = 0.15; // TODO: base this on the size of the hand
 
+  // Added state and refs for audio processing
+  const [currentVolume, setCurrentVolume] = useState(0); // Measured volume level
+  const audioContextRef = useRef(null);
+  const analyserRef = useRef(null);
+
   const options = {
     baseOptions: {
       modelAssetPath: '/hand_landmarker.task',
@@ -41,7 +46,6 @@ function App() {
   }, [handLandmarker]);
 
   useEffect(() => {
-    // if (hands[0]) console.log(hands[0][0].z);
     ctx.current.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height); // Clear canvas before drawing
 
     ctx.current.strokeStyle = 'black';
@@ -92,7 +96,7 @@ function App() {
         });
       }
       // if thumb and finger 3 are touching
-      if (distance([hand[4]], hand[16]) < touchingThreshold) {
+      if (distance(hand[4], hand[16]) < touchingThreshold) {
         loops.push({
           color: 'rgba(72, 77, 34, .5)',
           points:
@@ -107,8 +111,8 @@ function App() {
             ],
         });
       }
-      // if thumb and finger 3 are touching
-      if (distance([hand[4]], hand[20]) < touchingThreshold) {
+      // if thumb and finger 4 are touching
+      if (distance(hand[4], hand[20]) < touchingThreshold) {
         loops.push({
           color: 'rgba(77, 60, 34, .5)',
           points:
@@ -117,7 +121,7 @@ function App() {
               { x: hand[2].x * width, y: hand[2].y * height },
               { x: hand[3].x * width, y: hand[3].y * height },
               { x: hand[4].x * width, y: hand[4].y * height },
-              // finger 3 tip to base
+              // finger 4 tip to base
               { x: hand[20].x * width, y: hand[20].y * height },
               { x: hand[19].x * width, y: hand[19].y * height },
               { x: hand[18].x * width, y: hand[18].y * height },
@@ -165,11 +169,14 @@ function App() {
         points.forEach((point) => {
           ctx.current.lineTo(point.x, point.y);
         });
-        ctx.current.lineTo(points[0].x, points[0].y);
+        ctx.current.closePath();
         ctx.current.stroke();
       });
     }
-  }, [hands]);
+
+    // Optionally, display current volume level
+    // For example, you might want to draw it on the canvas or update some element
+  }, [hands, width, height, touchingThreshold]);
 
   const handleFrame = async (now) => {
     let timestamp = now * 1000;
@@ -186,8 +193,55 @@ function App() {
 
   handleFrameRef.current = handleFrame;
 
+  // Added function to initialize audio processing
+  const initializeAudio = (audioSource) => {
+    if (audioContextRef.current) {
+      audioContextRef.current.close();
+    }
+    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    audioContextRef.current = audioContext;
+
+    let sourceNode;
+    if (audioSource instanceof MediaStream) {
+      sourceNode = audioContext.createMediaStreamSource(audioSource);
+    } else if (audioSource instanceof HTMLMediaElement) {
+      sourceNode = audioContext.createMediaElementSource(audioSource);
+    } else {
+      console.error('Unsupported audio source');
+      return;
+    }
+
+    const analyser = audioContext.createAnalyser();
+    analyser.fftSize = 256;
+    analyserRef.current = analyser;
+
+    // Connect nodes: source -> analyser -> destination
+    sourceNode.connect(analyser);
+    analyser.connect(audioContext.destination);
+
+    // Start volume monitoring
+    monitorVolume();
+  };
+
+  // Added function to monitor volume levels
+  const monitorVolume = () => {
+    const bufferLength = analyserRef.current.frequencyBinCount;
+    const dataArray = new Uint8Array(bufferLength);
+
+    const getVolume = () => {
+      analyserRef.current.getByteFrequencyData(dataArray);
+      let sum = 0;
+      for (let i = 0; i < bufferLength; i++) {
+        sum += dataArray[i];
+      }
+      const average = sum / bufferLength;
+      setCurrentVolume(average / 255); // Normalize between 0 and 1
+      requestAnimationFrame(getVolume);
+    };
+    getVolume();
+  };
+
   const toggleCamera = async () => {
-    // console.log('toggleCamera');
     if (webcamRunning) {
       // Stop webcam
       stream.current.getTracks().forEach((track) => {
@@ -203,8 +257,8 @@ function App() {
         videoRef.current.currentTime = 0;
         videoRef.current.src = null;
       }
-      // Start webcam
-      const constraints = { video: true };
+      // Start webcam with microphone access
+      const constraints = { video: true, audio: true }; // Include audio
       stream.current = await navigator.mediaDevices.getUserMedia(constraints);
       const videoTrack = stream.current.getVideoTracks()[0];
       canvasRef.current.width = videoTrack.getSettings().width;
@@ -212,11 +266,12 @@ function App() {
       setWidth(videoTrack.getSettings().width);
       setHeight(videoTrack.getSettings().height);
       videoRef.current.srcObject = stream.current;
-      videoRef.current.src = null;
       videoRef.current.play();
       videoRef.current.requestVideoFrameCallback((now, metadata) => {
         handleFrameRef.current(now, metadata);
       });
+      // Initialize audio processing for microphone
+      initializeAudio(stream.current);
       setWebcamRunning(true);
       setVideoMode('webcam');
     }
@@ -243,6 +298,8 @@ function App() {
       videoRef.current.requestVideoFrameCallback((now, metadata) => {
         handleFrameRef.current(now, metadata);
       });
+      // Initialize audio processing for video
+      initializeAudio(videoRef.current);
     };
   };
 
@@ -264,13 +321,28 @@ function App() {
           >
             Load Video
           </button>
+          {/* Optionally display current volume level */}
+          <div
+            style={{
+              position: 'absolute',
+              zIndex: 10,
+              left: '240px',
+              top: '10px',
+              color: 'white',
+            }}
+          >
+            Current Volume:
+            {' '}
+            {(currentVolume * 100).toFixed(2)}
+            %
+          </div>
         </div>
       )}
       <video
         ref={videoRef}
         autoPlay
         playsInline
-        muted
+      // Remove 'muted' attribute to allow audio playback
       />
       <canvas ref={canvasRef} style={{ position: 'absolute', top: 0, left: 0 }} />
     </div>
