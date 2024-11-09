@@ -20,3 +20,9 @@ export const handConnections = [
   [18, 19],
   [19, 20], // Pinky
 ];
+
+export const distance = (point1, point2) => {
+  const dx = point1.x - point2.x;
+  const dy = point2.y - point2.y;
+  return Math.sqrt(dx * dx, dy * dy);
+};
