@@ -1,12 +1,14 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { HandLandmarker, FilesetResolver } from '@mediapipe/tasks-vision';
+import { handConnections } from './utils';
 
 function App() {
   const [handLandmarker, setHandLandmarker] = useState(null);
   const [webcamRunning, setWebcamRunning] = useState(false);
-  const [roundedJoints, setRoundedJoints] = useState([]);
+  const [hands, setHands] = useState([]);
   const [videoMode, setVideoMode] = useState('webcam');
-  const roundTo = 0.025;
+  const [width, setWidth] = useState(0);
+  const [height, setHeight] = useState(0);
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
   const ctx = useRef(null);
@@ -20,76 +22,48 @@ function App() {
       delegate: 'GPU',
     },
     runningMode: 'VIDEO',
-    numHands: 4,
+    numHands: 2,
   };
-
-  const HAND_CONNECTIONS = [
-    [0, 1],
-    [1, 2],
-    [2, 3],
-    [3, 4], // Thumb
-    [0, 5],
-    [5, 6],
-    [6, 7],
-    [7, 8], // Index finger
-    [0, 9],
-    [9, 10],
-    [10, 11],
-    [11, 12], // Middle finger
-    [0, 13],
-    [13, 14],
-    [14, 15],
-    [15, 16], // Ring finger
-    [0, 17],
-    [17, 18],
-    [18, 19],
-    [19, 20], // Pinky
-  ];
 
   useEffect(() => {
     const initializeHandLandmarker = async () => {
-      const vision = await FilesetResolver.forVisionTasks(
-        'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.0/wasm',
-      );
+      const vision = await FilesetResolver.forVisionTasks('https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.0/wasm');
       const handLandmarkerInstance = await HandLandmarker.createFromOptions(vision, options);
       setHandLandmarker(handLandmarkerInstance);
     };
-    initializeHandLandmarker();
-  }, []);
 
-  useEffect(() => {
     if (canvasRef.current) {
       ctx.current = canvasRef.current.getContext('2d');
     }
-  }, []); // Run once when the component mounts
+
+    if (!handLandmarker) initializeHandLandmarker();
+  }, [handLandmarker]);
 
   useEffect(() => {
-    ctx.current.fillStyle = 'purple';
-    ctx.current.lineWidth = 2;
+    ctx.current.lineWidth = 0.5;
 
     ctx.current.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height); // Clear canvas before drawing
-
-    for (const hand of roundedJoints) {
+    for (const hand of hands) {
       ctx.current.beginPath();
-      HAND_CONNECTIONS.forEach(([startIdx, endIdx]) => {
+      handConnections.forEach(([startIdx, endIdx]) => {
         const start = hand[startIdx];
         const end = hand[endIdx];
-        if (start && end) { // Add null checks
-          ctx.current.moveTo(
-            start.x * ctx.current.canvas.width,
-            start.y * ctx.current.canvas.height,
-          );
-          ctx.current.lineTo(
-            end.x * ctx.current.canvas.width,
-            end.y * ctx.current.canvas.height,
-          );
-        }
+        // if (start && end) { // Add null checks
+        ctx.current.moveTo(
+          start.x * width,
+          start.y * height,
+        );
+        ctx.current.lineTo(
+          end.x * width,
+          end.y * height,
+        );
+        // }
       });
       ctx.current.stroke();
     }
-  }, [roundedJoints]);
+  }, [hands]);
 
-  const handleFrame = async (now, metadata) => {
+  const handleFrame = async (now) => {
     let timestamp = now * 1000; // Convert from milliseconds to microseconds
 
     if (timestamp <= lastTimestamp.current) {
@@ -98,15 +72,8 @@ function App() {
     lastTimestamp.current = timestamp;
 
     const results = await handLandmarker.detectForVideo(videoRef.current, timestamp);
-    if (results.landmarks && results.landmarks.length) {
-      const nextJoints = results.landmarks.map((hand) => hand.map((joint) => ({
-        x: Math.round(joint.x / roundTo) * roundTo,
-        y: Math.round(joint.y / roundTo) * roundTo,
-      })));
-      setRoundedJoints(nextJoints);
-    } else {
-      setRoundedJoints([]);
-    }
+
+    setHands(results.landmarks.length ? results.landmarks : []);
 
     videoRef.current.requestVideoFrameCallback((now, metadata) => {
       handleFrameRef.current(now, metadata);
@@ -135,9 +102,8 @@ function App() {
       const constraints = { video: true };
       stream.current = await navigator.mediaDevices.getUserMedia(constraints);
       const videoTrack = stream.current.getVideoTracks()[0];
-      const { width, height } = videoTrack.getSettings();
-      canvasRef.current.width = width;
-      canvasRef.current.height = height;
+      canvasRef.current.width = videoTrack.getSettings().width;
+      canvasRef.current.height = videoTrack.getSettings().height;
       videoRef.current.srcObject = stream.current;
       videoRef.current.src = null;
       videoRef.current.play();
@@ -164,6 +130,8 @@ function App() {
     videoRef.current.onloadedmetadata = () => {
       canvasRef.current.width = videoRef.current.videoWidth;
       canvasRef.current.height = videoRef.current.videoHeight;
+      setWidth(videoRef.current.videoWidth);
+      setHeight(videoRef.current.videoHeight);
       videoRef.current.play();
       videoRef.current.requestVideoFrameCallback((now, metadata) => {
         handleFrameRef.current(now, metadata);
@@ -193,7 +161,6 @@ function App() {
       )}
       <video
         ref={videoRef}
-        style={{ display: 'block' }}
         autoPlay
         playsInline
         muted
