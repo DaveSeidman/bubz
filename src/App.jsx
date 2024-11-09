@@ -15,7 +15,7 @@ function App() {
   const stream = useRef();
   const handleFrameRef = useRef();
   const lastTimestamp = useRef(0);
-  const touchingThreshold = 0.02; // TODO: base this on the size of the hand
+  const touchingThreshold = 0.15; // TODO: base this on the size of the hand
 
   const options = {
     baseOptions: {
@@ -62,7 +62,7 @@ function App() {
       // if thumb and finger 1 are touching
       if (distance(hand[4], hand[8]) < touchingThreshold) {
         loops.push({
-          color: '#00FF00',
+          color: 'rgba(34, 77, 34, .5)',
           points:
             [
               { x: hand[2].x * width, y: hand[2].y * height },
@@ -78,7 +78,7 @@ function App() {
       // if thumb and finger 2 are touching
       if (distance(hand[4], hand[12]) < touchingThreshold) {
         loops.push({
-          color: '#0000FF',
+          color: 'rgba(44, 77, 34, .5)',
           points:
             [
               { x: hand[2].x * width, y: hand[2].y * height },
@@ -94,7 +94,7 @@ function App() {
       // if thumb and finger 3 are touching
       if (distance([hand[4]], hand[16]) < touchingThreshold) {
         loops.push({
-          color: '#FF0000',
+          color: 'rgba(72, 77, 34, .5)',
           points:
             [
               { x: hand[2].x * width, y: hand[2].y * height },
@@ -110,7 +110,7 @@ function App() {
       // if thumb and finger 3 are touching
       if (distance([hand[4]], hand[20]) < touchingThreshold) {
         loops.push({
-          color: '#FF00FF',
+          color: 'rgba(77, 60, 34, .5)',
           points:
             [
               // thumb base to tip
@@ -128,8 +128,8 @@ function App() {
     });
 
     if (hands.length === 2) {
-      if (distance(hands[0][4], hands[1][4]) < touchingThreshold
-        && distance(hands[0][8], hands[1][8]) < touchingThreshold) {
+      if (distance(hands[0][4], hands[1][4]) < (touchingThreshold / 2)
+        && distance(hands[0][8], hands[1][8]) < (touchingThreshold / 2)) {
         loops.push({
           color: '#FF44FF',
           points: [
@@ -157,9 +157,9 @@ function App() {
     }
 
     if (loops.length) {
-      ctx.current.beginPath();
-      ctx.current.lineWidth = 2;
+      ctx.current.lineWidth = 4;
       loops.forEach(({ color, points }) => {
+        ctx.current.beginPath();
         ctx.current.strokeStyle = color;
         ctx.current.moveTo(points[0].x, points[0].y);
         points.forEach((point) => {

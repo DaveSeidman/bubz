@@ -22,7 +22,7 @@ export const handConnections = [
 ];
 
 export const distance = (point1, point2) => {
-  const dx = point1.x - point2.x;
-  const dy = point2.y - point2.y;
-  return Math.sqrt(dx * dx, dy * dy);
+  const dx = point2.x - point1.x;
+  const dy = point2.y - point1.y;
+  return Math.hypot(dx, dy);
 };
