@@ -15,7 +15,7 @@ function App() {
   const stream = useRef();
   const handleFrameRef = useRef();
   const lastTimestamp = useRef(0);
-  const touchingThreshold = 0.005;
+  const touchingThreshold = 0.02; // TODO: base this on the size of the hand
 
   const options = {
     baseOptions: {
@@ -41,6 +41,7 @@ function App() {
   }, [handLandmarker]);
 
   useEffect(() => {
+    // if (hands[0]) console.log(hands[0][0].z);
     ctx.current.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height); // Clear canvas before drawing
 
     ctx.current.strokeStyle = 'black';
@@ -57,38 +58,116 @@ function App() {
     ctx.current.stroke();
 
     const loops = [];
-    hands.forEach((hand, index) => {
+    hands.forEach((hand) => {
       // if thumb and finger 1 are touching
       if (distance(hand[4], hand[8]) < touchingThreshold) {
-        loops.push({ index, points: [0, 1, 2, 3, 4, 8, 7, 6, 5] });
+        loops.push({
+          color: '#00FF00',
+          points:
+            [
+              { x: hand[2].x * width, y: hand[2].y * height },
+              { x: hand[3].x * width, y: hand[3].y * height },
+              { x: hand[4].x * width, y: hand[4].y * height },
+              { x: hand[8].x * width, y: hand[8].y * height },
+              { x: hand[7].x * width, y: hand[7].y * height },
+              { x: hand[6].x * width, y: hand[6].y * height },
+              { x: hand[5].x * width, y: hand[5].y * height },
+            ],
+        });
       }
       // if thumb and finger 2 are touching
       if (distance(hand[4], hand[12]) < touchingThreshold) {
-        loops.push({ index, points: [0, 1, 2, 3, 4, 12, 11, 10, 9] });
+        loops.push({
+          color: '#0000FF',
+          points:
+            [
+              { x: hand[2].x * width, y: hand[2].y * height },
+              { x: hand[3].x * width, y: hand[3].y * height },
+              { x: hand[4].x * width, y: hand[4].y * height },
+              { x: hand[12].x * width, y: hand[12].y * height },
+              { x: hand[11].x * width, y: hand[11].y * height },
+              { x: hand[10].x * width, y: hand[10].y * height },
+              { x: hand[9].x * width, y: hand[9].y * height },
+            ],
+        });
       }
       // if thumb and finger 3 are touching
       if (distance([hand[4]], hand[16]) < touchingThreshold) {
-        loops.push({ index, points: [0, 1, 2, 3, 4, 16, 15, 14, 13] });
+        loops.push({
+          color: '#FF0000',
+          points:
+            [
+              { x: hand[2].x * width, y: hand[2].y * height },
+              { x: hand[3].x * width, y: hand[3].y * height },
+              { x: hand[4].x * width, y: hand[4].y * height },
+              { x: hand[16].x * width, y: hand[16].y * height },
+              { x: hand[15].x * width, y: hand[15].y * height },
+              { x: hand[14].x * width, y: hand[14].y * height },
+              { x: hand[13].x * width, y: hand[13].y * height },
+            ],
+        });
       }
       // if thumb and finger 3 are touching
       if (distance([hand[4]], hand[20]) < touchingThreshold) {
-        loops.push({ index, points: [0, 1, 2, 3, 4, 20, 19, 18, 17] });
+        loops.push({
+          color: '#FF00FF',
+          points:
+            [
+              // thumb base to tip
+              { x: hand[2].x * width, y: hand[2].y * height },
+              { x: hand[3].x * width, y: hand[3].y * height },
+              { x: hand[4].x * width, y: hand[4].y * height },
+              // finger 3 tip to base
+              { x: hand[20].x * width, y: hand[20].y * height },
+              { x: hand[19].x * width, y: hand[19].y * height },
+              { x: hand[18].x * width, y: hand[18].y * height },
+              { x: hand[17].x * width, y: hand[17].y * height },
+            ],
+        });
       }
     });
 
-    if (loops.length) {
-      console.log(loops.length);
-      ctx.current.strokeStyle = 'green';
-      ctx.current.lineWidth = 2;
-      loops.forEach(({ index, points }) => {
-        const hand = hands[index];
-        ctx.current.moveTo(hand[points[0]].x * width, hand[points[0]].y * height);
-        points.forEach((point) => {
-          ctx.current.lineTo(hand[point].x * width, hand[point].y * height);
+    if (hands.length === 2) {
+      if (distance(hands[0][4], hands[1][4]) < touchingThreshold
+        && distance(hands[0][8], hands[1][8]) < touchingThreshold) {
+        loops.push({
+          color: '#FF44FF',
+          points: [
+            // left thumb base to tip
+            { x: hands[0][2].x * width, y: hands[0][2].y * height },
+            { x: hands[0][3].x * width, y: hands[0][3].y * height },
+            { x: hands[0][4].x * width, y: hands[0][4].y * height },
+            // right thumb tip to base
+            { x: hands[1][4].x * width, y: hands[1][4].y * height },
+            { x: hands[1][3].x * width, y: hands[1][3].y * height },
+            { x: hands[1][2].x * width, y: hands[1][2].y * height },
+            // right finger 1 base to tip
+            { x: hands[1][5].x * width, y: hands[1][5].y * height },
+            { x: hands[1][6].x * width, y: hands[1][6].y * height },
+            { x: hands[1][7].x * width, y: hands[1][7].y * height },
+            { x: hands[1][8].x * width, y: hands[1][8].y * height },
+            // left finger 1 tip to base
+            { x: hands[0][8].x * width, y: hands[0][8].y * height },
+            { x: hands[0][7].x * width, y: hands[0][7].y * height },
+            { x: hands[0][6].x * width, y: hands[0][6].y * height },
+            { x: hands[0][5].x * width, y: hands[0][5].y * height },
+          ],
         });
-        ctx.current.lineTo(hand[points[0]].x * width, hand[points[0]].y * height);
+      }
+    }
+
+    if (loops.length) {
+      ctx.current.beginPath();
+      ctx.current.lineWidth = 2;
+      loops.forEach(({ color, points }) => {
+        ctx.current.strokeStyle = color;
+        ctx.current.moveTo(points[0].x, points[0].y);
+        points.forEach((point) => {
+          ctx.current.lineTo(point.x, point.y);
+        });
+        ctx.current.lineTo(points[0].x, points[0].y);
+        ctx.current.stroke();
       });
-      ctx.current.stroke();
     }
   }, [hands]);
 
@@ -108,7 +187,7 @@ function App() {
   handleFrameRef.current = handleFrame;
 
   const toggleCamera = async () => {
-    console.log('toggleCamera');
+    // console.log('toggleCamera');
     if (webcamRunning) {
       // Stop webcam
       stream.current.getTracks().forEach((track) => {
