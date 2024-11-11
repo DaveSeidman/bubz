@@ -21,6 +21,7 @@ function App() {
   const loopIdCounter = useRef(1);
   const confirmationThreshold = 3; // Number of consecutive frames before assigning an ID
   const missingFramesThreshold = 3; // Number of frames before removing a loop
+  const basePath = import.meta.env.BASE_URL || '/';
 
   // Added state and refs for audio processing
   const [currentVolume, setCurrentVolume] = useState(0); // Measured volume level
@@ -34,7 +35,7 @@ function App() {
 
   const options = {
     baseOptions: {
-      modelAssetPath: '/hand_landmarker.task',
+      modelAssetPath: `${basePath}/hand_landmarker.task`,
       delegate: 'GPU',
     },
     runningMode: 'VIDEO',
@@ -161,7 +162,7 @@ function App() {
   useEffect(() => {
     ctx.current.lineWidth = 4;
     ctx.current.font = '20px Arial';
-    loops.forEach(({ id, color, points, center, confirmed }) => {
+    loops.forEach(({ id, color, points, center, confirmed }, index) => {
       if (confirmed) {
         ctx.current.beginPath();
         ctx.current.strokeStyle = color;
