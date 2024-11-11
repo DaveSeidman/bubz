@@ -21,7 +21,7 @@ export const handConnections = [
   [19, 20], // Pinky
 ];
 
-const distance = (point1, point2) => {
+export const distance = (point1, point2) => {
   const dx = point2.x - point1.x;
   const dy = point2.y - point1.y;
   return Math.hypot(dx, dy);

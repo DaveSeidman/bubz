@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { HandLandmarker, FilesetResolver } from '@mediapipe/tasks-vision';
-import { handConnections, findLoops } from './utils';
+import { distance, findLoops } from './utils';
 
 function App() {
   const [handLandmarker, setHandLandmarker] = useState(null);
@@ -17,6 +17,10 @@ function App() {
   const handleFrameRef = useRef();
   const lastTimestamp = useRef(0);
   const touchingThreshold = 0.05; // TODO: base this on the size of the hand
+  const movementTheshold = .2;
+  const loopIdCounter = useRef(1);
+  const confirmationThreshold = 3; // Number of consecutive frames before assigning an ID
+  const missingFramesThreshold = 3; // Number of frames before removing a loop
 
   // Added state and refs for audio processing
   const [currentVolume, setCurrentVolume] = useState(0); // Measured volume level
@@ -56,31 +60,109 @@ function App() {
   useEffect(() => {
     if (!ctx.current || !canvasRef.current) return;
 
-    ctx.current.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height); // Clear canvas before drawing
-
-    // ctx.current.strokeStyle = 'black';
-    // ctx.current.lineWidth = 0.5;
-    // ctx.current.beginPath();
-    // hands.forEach((hand) => {
-    //   handConnections.forEach(([startIdx, endIdx]) => {
-    //     const start = hand[startIdx];
-    //     const end = hand[endIdx];
-    //     ctx.current.moveTo(start.x * width, start.y * height);
-    //     ctx.current.lineTo(end.x * width, end.y * height);
-    //   });
-    // });
-    // ctx.current.stroke();
+    ctx.current.clearRect(0, 0, width, height);
 
     const nextLoops = findLoops(hands, touchingThreshold, width, height);
-    nextLoops.forEach(loop => {
 
-    })
-    setLoops(nextLoops);
+    // setLoops((prevLoops) => {
+    //   nextLoops.forEach(nextLoop => {
+    //     prevLoops.forEach(prevLoop => {
+    //       if(distance(nextLoop.center, prevLoop.center) < movementTheshold) {
 
-    if (nextLoops.length) {
-      ctx.current.lineWidth = 4;
-      ctx.current.font = '20px Arial';
-      nextLoops.forEach(({ id, color, points, center }, index) => {
+    //       }
+    //     })
+    //   })
+    // })
+    setLoops((prevLoops) => {
+      const updatedLoops = [];
+      const unmatchedPrevLoops = [...prevLoops];
+
+      nextLoops.forEach((nextLoop) => {
+        let matched = false;
+        for (let i = 0; i < unmatchedPrevLoops.length; i++) {
+          const prevLoop = unmatchedPrevLoops[i];
+          if (
+            distance(nextLoop.center, prevLoop.center) <
+            movementTheshold * Math.max(width, height)
+          ) {
+            // Match found
+            matched = true;
+            // Update the loop
+            const updatedLoop = {
+              ...prevLoop,
+              points: nextLoop.points,
+              center: nextLoop.center,
+              missingFrames: 0,
+            };
+
+            if (prevLoop.confirmed) {
+              // Confirmed loop, reset missingFrames
+              updatedLoops.push(updatedLoop);
+            } else {
+              // Unconfirmed loop, increment appearanceCount
+              updatedLoop.appearanceCount = (prevLoop.appearanceCount || 1) + 1;
+              if (updatedLoop.appearanceCount >= confirmationThreshold) {
+                // Assign new ID and confirm the loop
+                updatedLoop.id = loopIdCounter.current++;
+                updatedLoop.confirmed = true;
+              }
+              updatedLoops.push(updatedLoop);
+            }
+            // Remove prevLoop from unmatchedPrevLoops
+            unmatchedPrevLoops.splice(i, 1);
+            break;
+          }
+        }
+        if (!matched) {
+          // No match found, create new unconfirmed loop
+          const newLoop = {
+            ...nextLoop,
+            appearanceCount: 1,
+            missingFrames: 0,
+            confirmed: false,
+          };
+          updatedLoops.push(newLoop);
+        }
+      });
+
+      // For prevLoops that were not matched, increment missingFrames
+      unmatchedPrevLoops.forEach((prevLoop) => {
+        prevLoop.missingFrames = (prevLoop.missingFrames || 0) + 1;
+        if (prevLoop.missingFrames <= missingFramesThreshold) {
+          updatedLoops.push(prevLoop);
+        }
+        // Else, remove the loop by not including it in updatedLoops
+      });
+
+      return updatedLoops;
+    });
+
+    // if (nextLoops.length) {
+    //   ctx.current.lineWidth = 4;
+    //   ctx.current.font = '20px Arial';
+    //   nextLoops.forEach(({ id, color, points, center }, index) => {
+    //     ctx.current.beginPath();
+    //     ctx.current.strokeStyle = color;
+    //     ctx.current.fillStyle = color;
+    //     ctx.current.moveTo(points[0].x, points[0].y);
+    //     points.forEach((point) => {
+    //       ctx.current.lineTo(point.x, point.y);
+    //     });
+    //     ctx.current.closePath();
+    //     ctx.current.stroke();
+    //     ctx.current.fillText(index, center.x, center.y);
+    //   });
+    // }
+
+    // Optionally, display current volume level
+    // For example, you might want to draw it on the canvas or update some element
+  }, [hands, width, height, touchingThreshold]);
+
+  useEffect(() => {
+    ctx.current.lineWidth = 4;
+    ctx.current.font = '20px Arial';
+    loops.forEach(({ id, color, points, center, confirmed }) => {
+      if (confirmed) {
         ctx.current.beginPath();
         ctx.current.strokeStyle = color;
         ctx.current.fillStyle = color;
@@ -90,13 +172,11 @@ function App() {
         });
         ctx.current.closePath();
         ctx.current.stroke();
-        ctx.current.fillText(index, center.x, center.y);
-      });
-    }
+        ctx.current.fillText(id, center.x, center.y);
+      }
+    });
+  }, [loops])
 
-    // Optionally, display current volume level
-    // For example, you might want to draw it on the canvas or update some element
-  }, [hands, width, height, touchingThreshold]);
 
   const handleFrame = async (now) => {
     let timestamp = now * 1000;
