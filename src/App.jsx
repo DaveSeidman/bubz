@@ -88,13 +88,14 @@ function App() {
               points: nextLoop.points,
               center: nextLoop.center,
               missingFrames: 0,
+              age: (prevLoop.age || 1) + 1
             };
+            // updatedLoop.age = (prevLoop.age || 1) + 1;
 
             if (prevLoop.confirmed) {
               updatedLoops.push(updatedLoop);
             } else {
               // Unconfirmed loop, increment age
-              updatedLoop.age = (prevLoop.age || 1) + 1;
               if (updatedLoop.age >= confirmationThreshold) {
                 // Assign new ID and confirm the loop
                 updatedLoop.id = loopIdCounter.current++;
