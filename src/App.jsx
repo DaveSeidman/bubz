@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { HandLandmarker, FilesetResolver } from '@mediapipe/tasks-vision';
-
+import { useControls } from 'leva';
 import { distance, findLoops, getColors } from './utils';
 import Scene from './Scene';
 import testVid from './assets/test-vid.mp4'
@@ -33,6 +33,8 @@ function App() {
   const analyserRef = useRef(null);
   // Add this ref to store the animation frame ID
   const animationFrameIdRef = useRef(null);
+
+  const { minimumArea } = useControls({ minimumArea: { value: 10000, min: 1000, max: 20000 } });
 
   // New ref to manage the dynamically created video element
   const videoElementRef = useRef(null);
@@ -67,7 +69,7 @@ function App() {
 
     ctx.current.clearRect(0, 0, width, height);
 
-    const nextLoops = findLoops(hands, touchingThreshold, width, height);
+    const nextLoops = findLoops(hands, touchingThreshold, width, height, minimumArea);
 
     setLoops((prevLoops) => {
       const updatedLoops = [];
@@ -150,9 +152,7 @@ function App() {
         });
         ctx.current.closePath();
         ctx.current.stroke();
-        // ctx.current.scale(-1, 1);
         ctx.current.fillText(id, center.x, center.y);
-        // ctx.current.restore();
       }
     });
   }, [loops])

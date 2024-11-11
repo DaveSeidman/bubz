@@ -48,7 +48,12 @@ const pointsCenter = (points) => {
   return { x, y };
 };
 
-export const findLoops = (hands, touchingThreshold, width, height) => {
+const polygonArea = (points) => Math.abs(points.reduce((sum, { x, y }, i, arr) => {
+  const next = arr[(i + 1) % arr.length];
+  return sum + (x * next.y - y * next.x);
+}, 0) / 2);
+
+export const findLoops = (hands, touchingThreshold, width, height, minArea) => {
   const loops = [];
   hands.forEach((hand) => {
     // if thumb and finger 1 are touching
@@ -179,9 +184,11 @@ export const findLoops = (hands, touchingThreshold, width, height) => {
     }
   }
 
-  loops.forEach((loop) => {
+  const sizedLoops = loops.filter((loop) => polygonArea(loop.points) >= minArea);
+
+  sizedLoops.forEach((loop) => {
     loop.center = pointsCenter(loop.points);
   });
 
-  return loops;
+  return sizedLoops;
 };

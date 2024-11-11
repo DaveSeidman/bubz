@@ -15,7 +15,15 @@ function ExtrudedShape({ points, width, height, age }) {
     return newShape;
   }, [points]);
 
-  const extrudeSettings = { depth: age / 10, bevelEnabled: true };
+  const extrudeSettings = {
+    depth: age / 10,
+    bevelEnabled: true,
+    bevelThickness: 0.2,
+    bevelSize: 0.2,
+    bevelOffset: -0.1,
+    bevelSegments: 12,
+    steps: 6,
+  };
 
   return (
     <mesh position={[0, 0, 0]}>
