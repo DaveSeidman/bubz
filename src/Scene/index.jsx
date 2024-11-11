@@ -1,10 +1,10 @@
-import React, { useRef, useMemo } from 'react';
-import { Canvas, useFrame } from '@react-three/fiber';
-import { PerspectiveCamera, Extrude } from '@react-three/drei';
+import React, { useMemo } from 'react';
+import { Canvas, extend } from '@react-three/fiber';
+import { PerspectiveCamera, Environment } from '@react-three/drei';
 import * as THREE from 'three';
 import './index.scss';
 
-function ExtrudedShape({ points, width, height }) {
+function ExtrudedShape({ points, width, height, age }) {
   // console.log(points);
   // Create a shape based on the points provided
   const shape = useMemo(() => {
@@ -18,12 +18,24 @@ function ExtrudedShape({ points, width, height }) {
   }, [points]);
 
   // Extrusion settings
-  const extrudeSettings = { depth: 1, bevelEnabled: false };
+  const extrudeSettings = { depth: 3, bevelEnabled: true };
 
   return (
     <mesh position={[0, 0, -2]}>
       <extrudeGeometry args={[shape, extrudeSettings]} />
-      <meshNormalMaterial transparent opacity={0.5} />
+      <meshPhysicalMaterial
+        transmission={1}
+        thickness={0.01}
+        roughness={0}
+        clearcoat={1}
+        clearcoatRoughness={0}
+        reflectivity={0.9}
+        attenuationTint={new THREE.Color(0.2, 0.6, 1)}
+        attenuationDistance={0.1}
+        envMapIntensity={1}
+        specularIntensity={0.8}
+        ior={1.33}
+      />
     </mesh>
   );
 }
@@ -31,12 +43,20 @@ function ExtrudedShape({ points, width, height }) {
 export default function Scene({ loops, width, height }) {
   return (
     <Canvas className="scene" style={{ width, height }}>
-      <PerspectiveCamera makeDefault fov={4} position={[0, 0, 10]} />
+      <Environment preset="city" />
+
+      <PerspectiveCamera makeDefault fov={4} position={[0, 0, 14]} />
       <ambientLight />
-      <pointLight position={[10, 10, 10]} />
+      <directionalLight position={[10, 10, 10]} />
 
       {loops.map((loop, index) => (
-        <ExtrudedShape key={index} points={loop.points} width={width} height={height} />
+        <ExtrudedShape
+          key={index}
+          points={loop.points}
+          width={width}
+          height={height}
+          age={loop.age}
+        />
       ))}
     </Canvas>
   );
