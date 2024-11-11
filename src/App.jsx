@@ -22,7 +22,12 @@ function App() {
   const confirmationThreshold = 3; // Number of consecutive frames before assigning an ID
   const missingFramesThreshold = 3; // Number of frames before removing a loop
   const basePath = import.meta.env.BASE_URL || '/';
-
+  const colorAmount = 10;
+  const brightColors = Array.from({ length: colorAmount }, (_, i) => {
+    const hue = (i * (360 / colorAmount)) % 360;
+    return `hsl(${hue}, 100%, 50%)`;
+  });
+  // console.log(brightColors)
   // Added state and refs for audio processing
   const [currentVolume, setCurrentVolume] = useState(0); // Measured volume level
   const audioContextRef = useRef(null);
@@ -65,15 +70,6 @@ function App() {
 
     const nextLoops = findLoops(hands, touchingThreshold, width, height);
 
-    // setLoops((prevLoops) => {
-    //   nextLoops.forEach(nextLoop => {
-    //     prevLoops.forEach(prevLoop => {
-    //       if(distance(nextLoop.center, prevLoop.center) < movementTheshold) {
-
-    //       }
-    //     })
-    //   })
-    // })
     setLoops((prevLoops) => {
       const updatedLoops = [];
       const unmatchedPrevLoops = [...prevLoops];
@@ -82,10 +78,7 @@ function App() {
         let matched = false;
         for (let i = 0; i < unmatchedPrevLoops.length; i++) {
           const prevLoop = unmatchedPrevLoops[i];
-          if (
-            distance(nextLoop.center, prevLoop.center) <
-            movementTheshold * Math.max(width, height)
-          ) {
+          if (distance(nextLoop.center, prevLoop.center) < 50) {
             // Match found
             matched = true;
             // Update the loop
@@ -97,7 +90,6 @@ function App() {
             };
 
             if (prevLoop.confirmed) {
-              // Confirmed loop, reset missingFrames
               updatedLoops.push(updatedLoop);
             } else {
               // Unconfirmed loop, increment appearanceCount
@@ -138,35 +130,18 @@ function App() {
       return updatedLoops;
     });
 
-    // if (nextLoops.length) {
-    //   ctx.current.lineWidth = 4;
-    //   ctx.current.font = '20px Arial';
-    //   nextLoops.forEach(({ id, color, points, center }, index) => {
-    //     ctx.current.beginPath();
-    //     ctx.current.strokeStyle = color;
-    //     ctx.current.fillStyle = color;
-    //     ctx.current.moveTo(points[0].x, points[0].y);
-    //     points.forEach((point) => {
-    //       ctx.current.lineTo(point.x, point.y);
-    //     });
-    //     ctx.current.closePath();
-    //     ctx.current.stroke();
-    //     ctx.current.fillText(index, center.x, center.y);
-    //   });
-    // }
-
     // Optionally, display current volume level
     // For example, you might want to draw it on the canvas or update some element
   }, [hands, width, height, touchingThreshold]);
 
   useEffect(() => {
-    ctx.current.lineWidth = 4;
+    ctx.current.lineWidth = 2;
     ctx.current.font = '20px Arial';
     loops.forEach(({ id, color, points, center, confirmed }, index) => {
       if (confirmed) {
         ctx.current.beginPath();
-        ctx.current.strokeStyle = color;
-        ctx.current.fillStyle = color;
+        ctx.current.strokeStyle = brightColors[id % colorAmount];
+        ctx.current.fillStyle = brightColors[id % colorAmount];
         ctx.current.moveTo(points[0].x, points[0].y);
         points.forEach((point) => {
           ctx.current.lineTo(point.x, point.y);
