@@ -1,11 +1,12 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { HandLandmarker, FilesetResolver } from '@mediapipe/tasks-vision';
-import { handConnections, distance } from './utils';
+import { handConnections, findLoops } from './utils';
 
 function App() {
   const [handLandmarker, setHandLandmarker] = useState(null);
   const [webcamRunning, setWebcamRunning] = useState(false);
   const [hands, setHands] = useState([]);
+  const [loops, setLoops] = useState([]);
   const [videoMode, setVideoMode] = useState('webcam');
   const [width, setWidth] = useState(0);
   const [height, setHeight] = useState(0);
@@ -15,12 +16,17 @@ function App() {
   const stream = useRef();
   const handleFrameRef = useRef();
   const lastTimestamp = useRef(0);
-  const touchingThreshold = 0.15; // TODO: base this on the size of the hand
+  const touchingThreshold = 0.05; // TODO: base this on the size of the hand
 
   // Added state and refs for audio processing
   const [currentVolume, setCurrentVolume] = useState(0); // Measured volume level
   const audioContextRef = useRef(null);
   const analyserRef = useRef(null);
+  // Add this ref to store the animation frame ID
+  const animationFrameIdRef = useRef(null);
+
+  // New ref to manage the dynamically created video element
+  const videoElementRef = useRef(null);
 
   const options = {
     baseOptions: {
@@ -33,7 +39,9 @@ function App() {
 
   useEffect(() => {
     const initializeHandLandmarker = async () => {
-      const vision = await FilesetResolver.forVisionTasks('https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.0/wasm');
+      const vision = await FilesetResolver.forVisionTasks(
+        'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.0/wasm'
+      );
       const handLandmarkerInstance = await HandLandmarker.createFromOptions(vision, options);
       setHandLandmarker(handLandmarkerInstance);
     };
@@ -46,131 +54,43 @@ function App() {
   }, [handLandmarker]);
 
   useEffect(() => {
+    if (!ctx.current || !canvasRef.current) return;
+
     ctx.current.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height); // Clear canvas before drawing
 
-    ctx.current.strokeStyle = 'black';
-    ctx.current.lineWidth = 0.5;
-    ctx.current.beginPath();
-    hands.forEach((hand) => {
-      handConnections.forEach(([startIdx, endIdx]) => {
-        const start = hand[startIdx];
-        const end = hand[endIdx];
-        ctx.current.moveTo(start.x * width, start.y * height);
-        ctx.current.lineTo(end.x * width, end.y * height);
-      });
-    });
-    ctx.current.stroke();
+    // ctx.current.strokeStyle = 'black';
+    // ctx.current.lineWidth = 0.5;
+    // ctx.current.beginPath();
+    // hands.forEach((hand) => {
+    //   handConnections.forEach(([startIdx, endIdx]) => {
+    //     const start = hand[startIdx];
+    //     const end = hand[endIdx];
+    //     ctx.current.moveTo(start.x * width, start.y * height);
+    //     ctx.current.lineTo(end.x * width, end.y * height);
+    //   });
+    // });
+    // ctx.current.stroke();
 
-    const loops = [];
-    hands.forEach((hand) => {
-      // if thumb and finger 1 are touching
-      if (distance(hand[4], hand[8]) < touchingThreshold) {
-        loops.push({
-          color: 'rgba(34, 77, 34, .5)',
-          points:
-            [
-              { x: hand[2].x * width, y: hand[2].y * height },
-              { x: hand[3].x * width, y: hand[3].y * height },
-              { x: hand[4].x * width, y: hand[4].y * height },
-              { x: hand[8].x * width, y: hand[8].y * height },
-              { x: hand[7].x * width, y: hand[7].y * height },
-              { x: hand[6].x * width, y: hand[6].y * height },
-              { x: hand[5].x * width, y: hand[5].y * height },
-            ],
-        });
-      }
-      // if thumb and finger 2 are touching
-      if (distance(hand[4], hand[12]) < touchingThreshold) {
-        loops.push({
-          color: 'rgba(44, 77, 34, .5)',
-          points:
-            [
-              { x: hand[2].x * width, y: hand[2].y * height },
-              { x: hand[3].x * width, y: hand[3].y * height },
-              { x: hand[4].x * width, y: hand[4].y * height },
-              { x: hand[12].x * width, y: hand[12].y * height },
-              { x: hand[11].x * width, y: hand[11].y * height },
-              { x: hand[10].x * width, y: hand[10].y * height },
-              { x: hand[9].x * width, y: hand[9].y * height },
-            ],
-        });
-      }
-      // if thumb and finger 3 are touching
-      if (distance(hand[4], hand[16]) < touchingThreshold) {
-        loops.push({
-          color: 'rgba(72, 77, 34, .5)',
-          points:
-            [
-              { x: hand[2].x * width, y: hand[2].y * height },
-              { x: hand[3].x * width, y: hand[3].y * height },
-              { x: hand[4].x * width, y: hand[4].y * height },
-              { x: hand[16].x * width, y: hand[16].y * height },
-              { x: hand[15].x * width, y: hand[15].y * height },
-              { x: hand[14].x * width, y: hand[14].y * height },
-              { x: hand[13].x * width, y: hand[13].y * height },
-            ],
-        });
-      }
-      // if thumb and finger 4 are touching
-      if (distance(hand[4], hand[20]) < touchingThreshold) {
-        loops.push({
-          color: 'rgba(77, 60, 34, .5)',
-          points:
-            [
-              // thumb base to tip
-              { x: hand[2].x * width, y: hand[2].y * height },
-              { x: hand[3].x * width, y: hand[3].y * height },
-              { x: hand[4].x * width, y: hand[4].y * height },
-              // finger 4 tip to base
-              { x: hand[20].x * width, y: hand[20].y * height },
-              { x: hand[19].x * width, y: hand[19].y * height },
-              { x: hand[18].x * width, y: hand[18].y * height },
-              { x: hand[17].x * width, y: hand[17].y * height },
-            ],
-        });
-      }
-    });
+    const nextLoops = findLoops(hands, touchingThreshold, width, height);
+    nextLoops.forEach(loop => {
 
-    if (hands.length === 2) {
-      if (distance(hands[0][4], hands[1][4]) < (touchingThreshold / 2)
-        && distance(hands[0][8], hands[1][8]) < (touchingThreshold / 2)) {
-        loops.push({
-          color: '#FF44FF',
-          points: [
-            // left thumb base to tip
-            { x: hands[0][2].x * width, y: hands[0][2].y * height },
-            { x: hands[0][3].x * width, y: hands[0][3].y * height },
-            { x: hands[0][4].x * width, y: hands[0][4].y * height },
-            // right thumb tip to base
-            { x: hands[1][4].x * width, y: hands[1][4].y * height },
-            { x: hands[1][3].x * width, y: hands[1][3].y * height },
-            { x: hands[1][2].x * width, y: hands[1][2].y * height },
-            // right finger 1 base to tip
-            { x: hands[1][5].x * width, y: hands[1][5].y * height },
-            { x: hands[1][6].x * width, y: hands[1][6].y * height },
-            { x: hands[1][7].x * width, y: hands[1][7].y * height },
-            { x: hands[1][8].x * width, y: hands[1][8].y * height },
-            // left finger 1 tip to base
-            { x: hands[0][8].x * width, y: hands[0][8].y * height },
-            { x: hands[0][7].x * width, y: hands[0][7].y * height },
-            { x: hands[0][6].x * width, y: hands[0][6].y * height },
-            { x: hands[0][5].x * width, y: hands[0][5].y * height },
-          ],
-        });
-      }
-    }
+    })
+    setLoops(nextLoops);
 
-    if (loops.length) {
+    if (nextLoops.length) {
       ctx.current.lineWidth = 4;
-      loops.forEach(({ color, points }) => {
+      ctx.current.font = '20px Arial';
+      nextLoops.forEach(({ id, color, points, center }, index) => {
         ctx.current.beginPath();
         ctx.current.strokeStyle = color;
+        ctx.current.fillStyle = color;
         ctx.current.moveTo(points[0].x, points[0].y);
         points.forEach((point) => {
           ctx.current.lineTo(point.x, point.y);
         });
         ctx.current.closePath();
         ctx.current.stroke();
+        ctx.current.fillText(index, center.x, center.y);
       });
     }
 
@@ -180,23 +100,31 @@ function App() {
 
   const handleFrame = async (now) => {
     let timestamp = now * 1000;
-    if (timestamp <= lastTimestamp.current) { timestamp = lastTimestamp.current + 1; }
+    if (timestamp <= lastTimestamp.current) {
+      timestamp = lastTimestamp.current + 1;
+    }
     lastTimestamp.current = timestamp;
 
-    const results = await handLandmarker.detectForVideo(videoRef.current, timestamp);
+    const results = await handLandmarker.detectForVideo(videoElementRef.current, timestamp);
     setHands(results.landmarks.length ? results.landmarks : []);
 
-    videoRef.current.requestVideoFrameCallback((now, metadata) => {
+    videoElementRef.current.requestVideoFrameCallback((now, metadata) => {
       handleFrameRef.current(now, metadata);
     });
   };
 
   handleFrameRef.current = handleFrame;
 
-  // Added function to initialize audio processing
+  // Updated function to initialize audio processing
   const initializeAudio = (audioSource) => {
+    // Close the previous audio context if it exists
     if (audioContextRef.current) {
       audioContextRef.current.close();
+    }
+    // Cancel the previous animation frame
+    if (animationFrameIdRef.current) {
+      cancelAnimationFrame(animationFrameIdRef.current);
+      animationFrameIdRef.current = null;
     }
     const audioContext = new (window.AudioContext || window.webkitAudioContext)();
     audioContextRef.current = audioContext;
@@ -223,7 +151,7 @@ function App() {
     monitorVolume();
   };
 
-  // Added function to monitor volume levels
+  // Updated function to monitor volume levels
   const monitorVolume = () => {
     const bufferLength = analyserRef.current.frequencyBinCount;
     const dataArray = new Uint8Array(bufferLength);
@@ -236,7 +164,8 @@ function App() {
       }
       const average = sum / bufferLength;
       setCurrentVolume(average / 255); // Normalize between 0 and 1
-      requestAnimationFrame(getVolume);
+      // Store the animation frame ID
+      animationFrameIdRef.current = requestAnimationFrame(getVolume);
     };
     getVolume();
   };
@@ -247,15 +176,27 @@ function App() {
       stream.current.getTracks().forEach((track) => {
         track.stop();
       });
-      videoRef.current.srcObject = null;
-      videoRef.current.pause();
+      videoElementRef.current.srcObject = null;
+      videoElementRef.current.pause();
       setWebcamRunning(false);
+
+      // Clean up audio
+      if (audioContextRef.current) {
+        audioContextRef.current.close();
+        audioContextRef.current = null;
+      }
+      if (animationFrameIdRef.current) {
+        cancelAnimationFrame(animationFrameIdRef.current);
+        animationFrameIdRef.current = null;
+      }
     } else {
       // Stop video if playing
       if (videoMode === 'video') {
-        videoRef.current.pause();
-        videoRef.current.currentTime = 0;
-        videoRef.current.src = null;
+        if (videoElementRef.current) {
+          videoElementRef.current.pause();
+          videoElementRef.current.src = '';
+          videoElementRef.current.load();
+        }
       }
       // Start webcam with microphone access
       const constraints = { video: true, audio: true }; // Include audio
@@ -265,9 +206,17 @@ function App() {
       canvasRef.current.height = videoTrack.getSettings().height;
       setWidth(videoTrack.getSettings().width);
       setHeight(videoTrack.getSettings().height);
-      videoRef.current.srcObject = stream.current;
-      videoRef.current.play();
-      videoRef.current.requestVideoFrameCallback((now, metadata) => {
+
+      // Create a new video element
+      const videoElement = document.createElement('video');
+      videoElement.autoplay = true;
+      videoElement.playsInline = true;
+      videoElement.muted = true; // Mute if necessary
+      videoElement.srcObject = stream.current;
+      videoElementRef.current = videoElement;
+
+      videoElement.play();
+      videoElement.requestVideoFrameCallback((now, metadata) => {
         handleFrameRef.current(now, metadata);
       });
       // Initialize audio processing for microphone
@@ -283,24 +232,32 @@ function App() {
       toggleCamera();
     }
     setVideoMode('video');
-    // Stop any existing srcObject
-    if (videoRef.current.srcObject) {
-      videoRef.current.srcObject = null;
+    // Clean up existing video element
+    if (videoElementRef.current) {
+      videoElementRef.current.pause();
+      videoElementRef.current.src = '';
+      videoElementRef.current.load();
     }
-    videoRef.current.src = 'test-vid.mp4'; // Ensure the path is correct
-    videoRef.current.loop = true;
-    videoRef.current.onloadedmetadata = () => {
-      canvasRef.current.width = videoRef.current.videoWidth;
-      canvasRef.current.height = videoRef.current.videoHeight;
-      setWidth(videoRef.current.videoWidth);
-      setHeight(videoRef.current.videoHeight);
-      videoRef.current.play();
-      videoRef.current.requestVideoFrameCallback((now, metadata) => {
+    // Create a new video element
+    const videoElement = document.createElement('video');
+    videoElement.autoplay = true;
+    videoElement.playsInline = true;
+    // Remove 'muted' to allow audio playback
+    videoElement.src = 'test-vid.mp4'; // Ensure the path is correct
+    videoElement.loop = true;
+    videoElement.onloadedmetadata = () => {
+      canvasRef.current.width = videoElement.videoWidth;
+      canvasRef.current.height = videoElement.videoHeight;
+      setWidth(videoElement.videoWidth);
+      setHeight(videoElement.videoHeight);
+      videoElement.play();
+      videoElement.requestVideoFrameCallback((now, metadata) => {
         handleFrameRef.current(now, metadata);
       });
       // Initialize audio processing for video
-      initializeAudio(videoRef.current);
+      initializeAudio(videoElement);
     };
+    videoElementRef.current = videoElement;
   };
 
   return (
@@ -331,20 +288,27 @@ function App() {
               color: 'white',
             }}
           >
-            Current Volume:
-            {' '}
-            {(currentVolume * 100).toFixed(2)}
-            %
+            Current Volume: {(currentVolume * 100).toFixed(2)}%
           </div>
         </div>
       )}
-      <video
-        ref={videoRef}
-        autoPlay
-        playsInline
-      // Remove 'muted' attribute to allow audio playback
-      />
-      <canvas ref={canvasRef} style={{ position: 'absolute', top: 0, left: 0 }} />
+      {/* Render the video element */}
+      <div style={{ position: 'relative' }}>
+        {videoElementRef.current && (
+          <div
+            ref={(node) => {
+              if (node) {
+                node.innerHTML = '';
+                node.appendChild(videoElementRef.current);
+              }
+            }}
+          />
+        )}
+        <canvas
+          ref={canvasRef}
+          style={{ position: 'absolute', top: 0, left: 0 }}
+        />
+      </div>
     </div>
   );
 }
