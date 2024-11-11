@@ -1,6 +1,9 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { HandLandmarker, FilesetResolver } from '@mediapipe/tasks-vision';
-import { distance, findLoops } from './utils';
+
+import { distance, findLoops, getColors } from './utils';
+import Scene from './Scene';
+import testVid from './assets/test-vid.mp4'
 
 function App() {
   const [handLandmarker, setHandLandmarker] = useState(null);
@@ -10,23 +13,19 @@ function App() {
   const [videoMode, setVideoMode] = useState('webcam');
   const [width, setWidth] = useState(0);
   const [height, setHeight] = useState(0);
-  const videoRef = useRef(null);
   const canvasRef = useRef(null);
   const ctx = useRef(null);
   const stream = useRef();
   const handleFrameRef = useRef();
   const lastTimestamp = useRef(0);
-  const touchingThreshold = 0.05; // TODO: base this on the size of the hand
-  const movementTheshold = .2;
+  const touchingThreshold = 0.1; // TODO: base this on the size of the hand
+  // const movementTheshold = .2;
   const loopIdCounter = useRef(1);
   const confirmationThreshold = 3; // Number of consecutive frames before assigning an ID
   const missingFramesThreshold = 3; // Number of frames before removing a loop
   const basePath = import.meta.env.BASE_URL || '/';
   const colorAmount = 10;
-  const brightColors = Array.from({ length: colorAmount }, (_, i) => {
-    const hue = (i * (360 / colorAmount)) % 360;
-    return `hsl(${hue}, 100%, 50%)`;
-  });
+  const colors = getColors(colorAmount);
   // console.log(brightColors)
   // Added state and refs for audio processing
   const [currentVolume, setCurrentVolume] = useState(0); // Measured volume level
@@ -78,6 +77,8 @@ function App() {
         let matched = false;
         for (let i = 0; i < unmatchedPrevLoops.length; i++) {
           const prevLoop = unmatchedPrevLoops[i];
+          // TODO: make this an adjustable value
+          // TODO: check for point indexes for more accurate matching
           if (distance(nextLoop.center, prevLoop.center) < 50) {
             // Match found
             matched = true;
@@ -92,9 +93,9 @@ function App() {
             if (prevLoop.confirmed) {
               updatedLoops.push(updatedLoop);
             } else {
-              // Unconfirmed loop, increment appearanceCount
-              updatedLoop.appearanceCount = (prevLoop.appearanceCount || 1) + 1;
-              if (updatedLoop.appearanceCount >= confirmationThreshold) {
+              // Unconfirmed loop, increment age
+              updatedLoop.age = (prevLoop.age || 1) + 1;
+              if (updatedLoop.age >= confirmationThreshold) {
                 // Assign new ID and confirm the loop
                 updatedLoop.id = loopIdCounter.current++;
                 updatedLoop.confirmed = true;
@@ -110,7 +111,7 @@ function App() {
           // No match found, create new unconfirmed loop
           const newLoop = {
             ...nextLoop,
-            appearanceCount: 1,
+            age: 1,
             missingFrames: 0,
             confirmed: false,
           };
@@ -137,18 +138,20 @@ function App() {
   useEffect(() => {
     ctx.current.lineWidth = 2;
     ctx.current.font = '20px Arial';
-    loops.forEach(({ id, color, points, center, confirmed }, index) => {
+    loops.forEach(({ id, points, center, confirmed }, index) => {
       if (confirmed) {
         ctx.current.beginPath();
-        ctx.current.strokeStyle = brightColors[id % colorAmount];
-        ctx.current.fillStyle = brightColors[id % colorAmount];
+        ctx.current.strokeStyle = colors[id % colorAmount];
+        ctx.current.fillStyle = colors[id % colorAmount];
         ctx.current.moveTo(points[0].x, points[0].y);
         points.forEach((point) => {
           ctx.current.lineTo(point.x, point.y);
         });
         ctx.current.closePath();
         ctx.current.stroke();
+        // ctx.current.scale(-1, 1);
         ctx.current.fillText(id, center.x, center.y);
+        // ctx.current.restore();
       }
     });
   }, [loops])
@@ -299,7 +302,7 @@ function App() {
     videoElement.autoplay = true;
     videoElement.playsInline = true;
     // Remove 'muted' to allow audio playback
-    videoElement.src = 'test-vid.mp4'; // Ensure the path is correct
+    videoElement.src = testVid
     videoElement.loop = true;
     videoElement.onloadedmetadata = () => {
       canvasRef.current.width = videoElement.videoWidth;
@@ -363,6 +366,11 @@ function App() {
         <canvas
           ref={canvasRef}
           style={{ position: 'absolute', top: 0, left: 0 }}
+        />
+        <Scene
+          loops={loops}
+          width={width}
+          height={height}
         />
       </div>
     </div>
