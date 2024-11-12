@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useEffect, useMemo, useState, useRef } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { PerspectiveCamera, Environment } from '@react-three/drei';
 import * as THREE from 'three';
@@ -44,7 +44,25 @@ function ExtrudedShape({ points, width, height, age }) {
   );
 }
 
+function Bubble({ bubble }) {
+  useFrame(() => {
+    // move bubble on z axis while it's attached property is true
+    // move bubble on y axis when it's attached property is false
+    // if it's y position is greater than 1, remove it from the bubble array
+  });
+}
+
 export default function Scene({ loops, width, height }) {
+  const [bubbles, setBubbles] = useState([]);
+  const prevLoops = useRef([]);
+
+  useEffect(() => {
+    // Check for new loops and lost loops and update bubbles accordingly
+    // new loops should add a bubble to the bubble array
+    // lost loops should update that bubble's attached property to false
+    prevLoops.current = loops;
+  }, [loops]);
+
   return (
     <Canvas className="scene" style={{ width, height }}>
       <Environment preset="city" />
@@ -57,6 +75,11 @@ export default function Scene({ loops, width, height }) {
           width={width}
           height={height}
           age={loop.age}
+        />
+      ))}
+      {bubbles.map((bubble) => (
+        <Bubble
+          bubble={bubble}
         />
       ))}
     </Canvas>

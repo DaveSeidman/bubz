@@ -34,7 +34,7 @@ function App() {
   // Add this ref to store the animation frame ID
   const animationFrameIdRef = useRef(null);
 
-  const { minimumArea } = useControls({ minimumArea: { value: 10000, min: 1000, max: 20000 } });
+  const { minimumArea } = useControls({ minimumArea: { value: 4000, min: 1000, max: 20000 } });
 
   // New ref to manage the dynamically created video element
   const videoElementRef = useRef(null);
