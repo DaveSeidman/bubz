@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState, useRef } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
-import { PerspectiveCamera, Environment } from '@react-three/drei';
+import { PerspectiveCamera, Environment, MarchingCubes, MarchingCube } from '@react-three/drei';
 import { Shape, Color } from 'three';
 import './index.scss';
 
@@ -50,19 +50,12 @@ function Bubble({ bubble }) {
   useFrame(() => {
     setPosition((prevPosition) => {
       if (prevPosition[1] > 1) bubble.offscreen = true;
-      return [prevPosition[0], prevPosition[1] + (bubble.attached ? 0 : 0.005), prevPosition[2] + 0.1];
+      return [prevPosition[0], prevPosition[1] + (bubble.attached ? 0 : 0.005), prevPosition[2]];
     });
   });
 
   return (
-    <mesh
-      position={position}
-    >
-      <sphereGeometry
-        args={[0.1, 4, 6]}
-      />
-      <meshNormalMaterial />
-    </mesh>
+    <MarchingCube position={position} strength={0.35} subtract={6} />
   );
 }
 
@@ -71,17 +64,18 @@ export default function Scene({ loops, width, height }) {
   const prevLoops = useRef([]);
 
   useEffect(() => {
-    const loopsAdded = [...loops].filter((loop) => !prevLoops.current.some((prevLoop) => loop.id === prevLoop.id));
-    const loopsRemoved = [...prevLoops.current].filter((prevLoop) => !loops.some((loop) => loop.id === prevLoop.id));
+    const loopsAdded = loops.filter((loop) => !prevLoops.current.some((prevLoop) => loop.id === prevLoop.id));
+    const loopsRemoved = prevLoops.current.filter((prevLoop) => !loops.some((loop) => loop.id === prevLoop.id));
 
     setBubbles((prevBubbles) => {
       const nextBubbles = [...prevBubbles];
-      // add new bubbles
+      // Add new bubbles for added loops
       loopsAdded.forEach((loop) => {
         nextBubbles.push({
           id: loop.id,
-          center: loop.center, // TODO: add a random offset
-          position: [(loop.center.x / (width / 2)) - 1, (loop.center.y / (width / -2)) + 1, 0],
+          center: loop.center,
+          color: loop.color,
+          position: [(loop.center.x / (width / 2)) - 1, (loop.center.y / (height / -2)) + 1, 0],
           velocity: { x: 0, y: 0, z: 0.1 },
           attached: true,
           offscreen: false,
@@ -98,14 +92,14 @@ export default function Scene({ loops, width, height }) {
     });
 
     prevLoops.current = loops;
-  }, [loops]);
+  }, [loops, width, height]);
 
   return (
     <Canvas className="scene" style={{ width, height }}>
       <Environment preset="city" />
-      <PerspectiveCamera makeDefault fov={4} position={[0, 0, 24]} />
+      <PerspectiveCamera makeDefault fov={4} near={0.1} far={50} position={[0, 0, 24]} />
       <directionalLight />
-      {loops.map((loop, index) => (
+      {/* {loops.map((loop, index) => (
         <ExtrudedShape
           key={index}
           points={loop.points}
@@ -113,14 +107,19 @@ export default function Scene({ loops, width, height }) {
           height={height}
           age={loop.age}
         />
-      ))}
-      {bubbles.map((bubble) =>
-      // console.log(bubble.position);
-      (
-        <Bubble
-          bubble={bubble}
-        />
-      ))}
+      ))} */}
+      <MarchingCubes
+        resolution={40}
+        maxPolyCount={2000}
+        enableUvs
+        enableColors
+      >
+        {bubbles.map((bubble) => (
+          <Bubble key={bubble.id} bubble={bubble} />
+        ))}
+        {/* Add a material explicitly as a child of MarchingCubes */}
+        <meshPhysicalMaterial color="gray" transmission={0.9} roughness={0.1} />
+      </MarchingCubes>
     </Canvas>
   );
 }

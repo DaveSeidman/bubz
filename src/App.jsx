@@ -345,7 +345,6 @@ function App() {
               zIndex: 10,
               left: '240px',
               top: '10px',
-              color: 'white',
             }}
           >
             Current Volume: {(currentVolume * 100).toFixed(2)}%
