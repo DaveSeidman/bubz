@@ -46,8 +46,12 @@ function ExtrudedShape({ points, width, height, age }) {
 
 function Bubble({ bubble }) {
   const [position, setPosition] = useState(bubble.position);
+
   useFrame(() => {
-    setPosition((prevPosition) => [prevPosition[0], prevPosition[1] + bubble.attached ? 0 : 0.01, prevPosition[2] + 0.1]);
+    setPosition((prevPosition) => {
+      if (prevPosition[1] > 1) bubble.offscreen = true;
+      return [prevPosition[0], prevPosition[1] + (bubble.attached ? 0 : 0.005), prevPosition[2] + 0.1];
+    });
   });
 
   return (
@@ -55,7 +59,7 @@ function Bubble({ bubble }) {
       position={position}
     >
       <sphereGeometry
-        args={[0.01, 8, 16]}
+        args={[0.1, 4, 6]}
       />
       <meshNormalMaterial />
     </mesh>
@@ -67,8 +71,8 @@ export default function Scene({ loops, width, height }) {
   const prevLoops = useRef([]);
 
   useEffect(() => {
-    const loopsAdded = loops.filter((loop) => !prevLoops.current.includes(loop.id));
-    const loopsRemoved = prevLoops.current.filter((loop) => !loops.includes(loop.id));
+    const loopsAdded = [...loops].filter((loop) => !prevLoops.current.some((prevLoop) => loop.id === prevLoop.id));
+    const loopsRemoved = [...prevLoops.current].filter((prevLoop) => !loops.some((loop) => loop.id === prevLoop.id));
 
     setBubbles((prevBubbles) => {
       const nextBubbles = [...prevBubbles];
@@ -77,16 +81,20 @@ export default function Scene({ loops, width, height }) {
         nextBubbles.push({
           id: loop.id,
           center: loop.center, // TODO: add a random offset
-          position: [loop.center.x, loop.center.y, 0],
+          position: [(loop.center.x / (width / 2)) - 1, (loop.center.y / (width / -2)) + 1, 0],
           velocity: { x: 0, y: 0, z: 0.1 },
           attached: true,
+          offscreen: false,
         });
       });
-      // detach bubbles if loop disappeared
+      // Detach bubbles if the corresponding loop has disappeared
       nextBubbles.forEach((bubble) => {
-        if (loopsRemoved.some((loop) => loop.id === bubble.id)) bubble.attached = false;
+        if (loopsRemoved.some((removedLoop) => removedLoop.id === bubble.id)) {
+          bubble.attached = false;
+        }
       });
-      return nextBubbles;
+
+      return nextBubbles.filter((bubble) => !bubble.offscreen);
     });
 
     prevLoops.current = loops;
@@ -106,7 +114,9 @@ export default function Scene({ loops, width, height }) {
           age={loop.age}
         />
       ))}
-      {bubbles.map((bubble) => (
+      {bubbles.map((bubble) =>
+      // console.log(bubble.position);
+      (
         <Bubble
           bubble={bubble}
         />
