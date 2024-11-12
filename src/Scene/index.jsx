@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState, useRef } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
-import { PerspectiveCamera, Environment, MarchingCubes, MarchingCube } from '@react-three/drei';
+import { PerspectiveCamera, Environment, MarchingCubes, MarchingCube, MarchingPlane, OrbitControls } from '@react-three/drei';
 import { Shape, Color } from 'three';
 import './index.scss';
 
@@ -50,12 +50,12 @@ function Bubble({ bubble }) {
   useFrame(() => {
     setPosition((prevPosition) => {
       if (prevPosition[1] > 1) bubble.offscreen = true;
-      return [prevPosition[0], prevPosition[1] + (bubble.attached ? 0 : 0.005), prevPosition[2]];
+      return [prevPosition[0], prevPosition[1] + (bubble.attached ? 0 : 0.005), prevPosition[2] + 0.01];
     });
   });
 
   return (
-    <MarchingCube position={position} strength={0.35} subtract={6} />
+    <MarchingCube position={position} strength={0.5} subtract={6} />
   );
 }
 
@@ -75,7 +75,7 @@ export default function Scene({ loops, width, height }) {
           id: loop.id,
           center: loop.center,
           color: loop.color,
-          position: [(loop.center.x / (width / 2)) - 1, (loop.center.y / (height / -2)) + 1, 0],
+          position: [(loop.center.x / (width / 2)) - 1, (loop.center.y / (height / -2)) + 1, -1],
           velocity: { x: 0, y: 0, z: 0.1 },
           attached: true,
           offscreen: false,
@@ -98,27 +98,28 @@ export default function Scene({ loops, width, height }) {
     <Canvas className="scene" style={{ width, height }}>
       <Environment preset="city" />
       <PerspectiveCamera makeDefault fov={4} near={0.1} far={50} position={[0, 0, 24]} />
+      <OrbitControls />
       <directionalLight />
-      {/* {loops.map((loop, index) => (
-        <ExtrudedShape
-          key={index}
-          points={loop.points}
-          width={width}
-          height={height}
-          age={loop.age}
-        />
-      ))} */}
       <MarchingCubes
-        resolution={40}
-        maxPolyCount={2000}
+        resolution={50}
+        maxPolyCount={50000}
         enableUvs
         enableColors
       >
         {bubbles.map((bubble) => (
           <Bubble key={bubble.id} bubble={bubble} />
         ))}
-        {/* Add a material explicitly as a child of MarchingCubes */}
-        <meshPhysicalMaterial color="gray" transmission={0.9} roughness={0.1} />
+        <MarchingPlane
+          planeType="z"
+          strength={0.5}
+          subtract={6}
+        />
+        <meshPhysicalMaterial
+          color={new Color('rgb(200, 200, 200)')}
+          transmission={0.9}
+          roughness={0.1}
+          metalness={0.3}
+        />
       </MarchingCubes>
     </Canvas>
   );
