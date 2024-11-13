@@ -34,7 +34,13 @@ function App() {
   // Add this ref to store the animation frame ID
   const animationFrameIdRef = useRef(null);
 
-  const { minimumArea } = useControls({ minimumArea: { value: 4000, min: 1000, max: 20000 } });
+  const {
+    minimumArea,
+    debug
+  } = useControls({
+    minimumArea: { value: 4000, min: 1000, max: 20000 },
+    debug: { value: false }
+  });
 
   // New ref to manage the dynamically created video element
   const videoElementRef = useRef(null);
@@ -371,6 +377,7 @@ function App() {
           loops={loops}
           width={width}
           height={height}
+          debug={debug}
         />
       </div>
     </div>

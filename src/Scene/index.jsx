@@ -1,10 +1,10 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
-import { PerspectiveCamera, Environment, MarchingCubes, MarchingCube, MarchingPlane, OrbitControls } from '@react-three/drei';
+import { PerspectiveCamera, Environment, MarchingCubes, MarchingCube, MarchingPlane, OrbitControls, Sphere } from '@react-three/drei';
 import { Color } from 'three';
 import './index.scss';
 
-function Bubble({ bubble }) {
+function Bubble({ bubble, debug }) {
   const [position, setPosition] = useState(bubble.position);
 
   useFrame(() => {
@@ -14,12 +14,19 @@ function Bubble({ bubble }) {
     });
   });
 
-  return (
-    <MarchingCube position={position} strength={0.5} subtract={6} />
+  return (debug ? (
+    <mesh
+      position={position}
+    >
+      <sphereGeometry args={[0.2, 8, 16]} />
+      <meshNormalMaterial />
+    </mesh>
+  )
+    : (<MarchingCube position={position} strength={0.5} subtract={6} />)
   );
 }
 
-export default function Scene({ loops, width, height }) {
+export default function Scene({ loops, width, height, debug }) {
   const [bubbles, setBubbles] = useState([]);
   const prevLoops = useRef([]);
 
@@ -60,27 +67,44 @@ export default function Scene({ loops, width, height }) {
       <PerspectiveCamera makeDefault fov={4} near={0.1} far={50} position={[0, 0, 24]} />
       <OrbitControls />
       <directionalLight />
-      <MarchingCubes
-        resolution={50}
-        maxPolyCount={50000}
-        enableUvs
-        enableColors
-      >
-        {bubbles.map((bubble) => (
-          <Bubble key={bubble.id} bubble={bubble} />
-        ))}
-        <MarchingPlane
-          planeType="z"
-          strength={0.5}
-          subtract={6}
-        />
-        <meshPhysicalMaterial
-          color={new Color('rgb(200, 200, 200)')}
-          transmission={0.9}
-          roughness={0.1}
-          metalness={0.3}
-        />
-      </MarchingCubes>
+
+      {debug ? (
+        <group>
+          {bubbles.map((bubble) => (
+            <Bubble
+              key={bubble.id}
+              bubble={bubble}
+              debug={debug}
+            />
+          ))}
+        </group>
+      )
+        : (
+          <MarchingCubes
+            resolution={50}
+            maxPolyCount={50000}
+            enableUvs
+            enableColors
+          >
+            {bubbles.map((bubble) => (
+              <Bubble
+                key={bubble.id}
+                bubble={bubble}
+              />
+            ))}
+            <MarchingPlane
+              planeType="z"
+              strength={0.5}
+              subtract={6}
+            />
+            <meshPhysicalMaterial
+              color={new Color('rgb(200, 200, 200)')}
+              transmission={0.9}
+              roughness={0.1}
+              metalness={0.3}
+            />
+          </MarchingCubes>
+        )}
     </Canvas>
   );
 }
