@@ -2,8 +2,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import { PerspectiveCamera, Environment, MarchingCubes, MarchingCube, MarchingPlane, OrbitControls } from '@react-three/drei';
 import { Physics, RigidBody } from '@react-three/rapier';
-
-import { Color } from 'three';
+import { Color, Vector3 } from 'three';
 import './index.scss';
 
 function Bubble({ bubble, debug }) {
@@ -28,16 +27,31 @@ function Bubble({ bubble, debug }) {
 
 function BouncingSphere({ bubbles, impulseTrigger }) {
   const sphereRef = useRef();
+  const maxSpeed = 0.005;
 
   useEffect(() => {
     if (impulseTrigger && sphereRef.current) {
-      sphereRef.current.applyImpulse({ x: 0, y: 0.1, z: 0 }, true);
+      // sphereRef.current.applyImpulse({ x: 0, y: 0.1, z: 0 }, true);
+      sphereRef.current.setTranslation({ x: 0, y: 0, z: 0 }, true);
     }
   }, [impulseTrigger]);
 
   useFrame(() => {
-    if (bubbles.length) {
-      // console.log(sphereRef.current.translation(), bubbles[0].position);
+    if (bubbles.length && sphereRef.current) {
+      const bubblePosition = new Vector3(...bubbles[0].position);
+      const spherePosition = new Vector3().copy(sphereRef.current.translation());
+
+      // Calculate the direction vector from the sphere to the bubble
+      const direction = bubblePosition.sub(spherePosition);
+      const distance = direction.length();
+
+      // Normalize the direction and calculate speed based on inverse-square law
+      direction.normalize();
+      const speed = Math.min(maxSpeed, 0.05 / (distance * distance)); // Cap speed based on distance
+      const velocity = direction.multiplyScalar(speed);
+
+      // Set the linear velocity directly
+      sphereRef.current.addForce(velocity, true);
     }
   });
 
@@ -46,8 +60,9 @@ function BouncingSphere({ bubbles, impulseTrigger }) {
       ref={sphereRef}
       restitution={0.8}
       friction={0.2}
+      linearDamping={5}
     >
-      <mesh position={[0, 1, 0]}>
+      <mesh position={[0, 0.2, 0]}>
         <sphereGeometry args={[0.15, 32, 32]} />
         <meshStandardMaterial color="orange" />
       </mesh>
@@ -59,7 +74,7 @@ function GroundPlane() {
   return (
     <RigidBody type="fixed" restitution={0.8} friction={0.5}>
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.7, 0]}>
-        <planeGeometry args={[10, 10]} />
+        <planeGeometry args={[100, 100]} />
         <meshStandardMaterial color="lightgrey" />
       </mesh>
     </RigidBody>
@@ -154,7 +169,7 @@ export default function Scene({ loops, width, height, debug }) {
             />
           </MarchingCubes>
         )}
-      <Physics gravity={[0, -9.81, 0]}>
+      <Physics gravity={[0, 0.01, 0]}>
         <BouncingSphere
           impulseTrigger={impulseTrigger}
           bubbles={bubbles}
