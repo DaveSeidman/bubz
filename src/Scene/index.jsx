@@ -1,6 +1,8 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
-import { PerspectiveCamera, Environment, MarchingCubes, MarchingCube, MarchingPlane, OrbitControls, Sphere } from '@react-three/drei';
+import { PerspectiveCamera, Environment, MarchingCubes, MarchingCube, MarchingPlane, OrbitControls } from '@react-three/drei';
+import { Physics, RigidBody } from '@react-three/rapier';
+
 import { Color } from 'three';
 import './index.scss';
 
@@ -15,9 +17,7 @@ function Bubble({ bubble, debug }) {
   });
 
   return (debug ? (
-    <mesh
-      position={position}
-    >
+    <mesh position={position}>
       <sphereGeometry args={[0.2, 8, 16]} />
       <meshNormalMaterial />
     </mesh>
@@ -26,9 +26,50 @@ function Bubble({ bubble, debug }) {
   );
 }
 
+function BouncingSphere({ bubbles, impulseTrigger }) {
+  const sphereRef = useRef();
+
+  useEffect(() => {
+    if (impulseTrigger && sphereRef.current) {
+      sphereRef.current.applyImpulse({ x: 0, y: 0.1, z: 0 }, true);
+    }
+  }, [impulseTrigger]);
+
+  useFrame(() => {
+    if (bubbles.length) {
+      // console.log(sphereRef.current.translation(), bubbles[0].position);
+    }
+  });
+
+  return (
+    <RigidBody
+      ref={sphereRef}
+      restitution={0.8}
+      friction={0.2}
+    >
+      <mesh position={[0, 1, 0]}>
+        <sphereGeometry args={[0.15, 32, 32]} />
+        <meshStandardMaterial color="orange" />
+      </mesh>
+    </RigidBody>
+  );
+}
+
+function GroundPlane() {
+  return (
+    <RigidBody type="fixed" restitution={0.8} friction={0.5}>
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.7, 0]}>
+        <planeGeometry args={[10, 10]} />
+        <meshStandardMaterial color="lightgrey" />
+      </mesh>
+    </RigidBody>
+  );
+}
+
 export default function Scene({ loops, width, height, debug }) {
   const [bubbles, setBubbles] = useState([]);
   const prevLoops = useRef([]);
+  const [impulseTrigger, setImpulseTrigger] = useState(false); // State to trigger the impulse
 
   useEffect(() => {
     const loopsAdded = loops.filter((loop) => !prevLoops.current.some((prevLoop) => loop.id === prevLoop.id));
@@ -61,8 +102,16 @@ export default function Scene({ loops, width, height, debug }) {
     prevLoops.current = loops;
   }, [loops, width, height]);
 
+  useEffect(() => {
+    setImpulseTrigger(false);
+  }, [impulseTrigger]);
+
   return (
-    <Canvas className="scene" style={{ width, height }}>
+    <Canvas
+      className="scene"
+      style={{ width, height }}
+      onClick={() => { setImpulseTrigger(true); }}
+    >
       <Environment preset="city" />
       <PerspectiveCamera makeDefault fov={4} near={0.1} far={50} position={[0, 0, 24]} />
       <OrbitControls />
@@ -105,6 +154,13 @@ export default function Scene({ loops, width, height, debug }) {
             />
           </MarchingCubes>
         )}
+      <Physics gravity={[0, -9.81, 0]}>
+        <BouncingSphere
+          impulseTrigger={impulseTrigger}
+          bubbles={bubbles}
+        />
+        <GroundPlane />
+      </Physics>
     </Canvas>
   );
 }

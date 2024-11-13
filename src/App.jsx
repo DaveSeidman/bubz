@@ -36,9 +36,11 @@ function App() {
 
   const {
     minimumArea,
+    noiseThreshold,
     debug
   } = useControls({
     minimumArea: { value: 4000, min: 1000, max: 20000 },
+    noiseThreshold: { value: 20, min: 1, max: 100 },
     debug: { value: false }
   });
 
@@ -61,6 +63,7 @@ function App() {
       );
       const handLandmarkerInstance = await HandLandmarker.createFromOptions(vision, options);
       setHandLandmarker(handLandmarkerInstance);
+      loadVideo();
     };
 
     if (canvasRef.current) {
@@ -142,7 +145,7 @@ function App() {
 
     // Optionally, display current volume level
     // For example, you might want to draw it on the canvas or update some element
-  }, [hands, width, height, touchingThreshold]);
+  }, [hands]);
 
   useEffect(() => {
     ctx.current.lineWidth = 2;
@@ -302,12 +305,17 @@ function App() {
     if (videoElementRef.current) {
       videoElementRef.current.pause();
       videoElementRef.current.src = '';
+      // videoElementRef.current.addEventListener('load', () => {
+      // console.log('loaded')
+      // videoElementRef.current.muted = false;
+      // })
       videoElementRef.current.load();
     }
     // Create a new video element
     const videoElement = document.createElement('video');
     videoElement.autoplay = true;
     videoElement.playsInline = true;
+    // videoElement.muted = true;
     // Remove 'muted' to allow audio playback
     videoElement.src = testVid
     videoElement.loop = true;
