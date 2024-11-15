@@ -1,35 +1,33 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import { PerspectiveCamera, Environment, MarchingCubes, MarchingCube, MarchingPlane, OrbitControls } from '@react-three/drei';
-import { Physics, RigidBody } from '@react-three/rapier';
-import { Color, Vector3 } from 'three';
+import { Color } from 'three';
 import { randomPointInPolygon } from '../utils';
 import './index.scss';
 
-function Bubble({ bubble, debug }) {
+function Bubble({ bubble, blob }) {
   const [position, setPosition] = useState(bubble.position);
 
   useFrame(() => {
     setPosition((prevPosition) => {
-      bubble.velocity[1] += 0.0005;
+      bubble.velocity[1] += 0.00025;
       const nextPosition = [...prevPosition];
       nextPosition[0] += bubble.velocity[0];
       nextPosition[1] += bubble.velocity[1];
       nextPosition[2] += bubble.velocity[2];
-
       if (prevPosition[1] > 1) bubble.offscreen = true;
-
       return nextPosition;
-      // return [prevPosition[0], prevPosition[1] + (bubble.attached ? 0 : 0.005), prevPosition[2] + 0.01];
     });
   });
 
-  return (
-    <mesh position={position}>
-      <sphereGeometry args={[0.025, 4, 2]} />
-      <meshNormalMaterial flatShading />
-    </mesh>
-  );
+  return blob
+    ? (<MarchingCube args={[0.0025]} position={position} strength={0.1} subtract={12} />)
+    : (
+      <mesh position={position}>
+        <sphereGeometry args={[0.025, 4, 2]} />
+        <meshNormalMaterial flatShading />
+      </mesh>
+    );
 }
 
 function Bubbles({ loops, noiseThreshold, currentVolume }) {
@@ -47,11 +45,14 @@ function Bubbles({ loops, noiseThreshold, currentVolume }) {
 
       setBubbles((prevBubbles) => {
         const nextBubbles = [...prevBubbles];
-        nextBubbles.push({
-          id: Math.random(),
-          position: [point.x - 0.5, -point.y + 0.5, 0],
-          velocity: [0, 0, 0.001],
-        });
+        // blow more bubbles depending on volume
+        for (let i = 0; i < currentVolume * 10; i += 1) {
+          nextBubbles.push({
+            id: Math.random(),
+            position: [point.x - 0.5, -point.y + 0.5, 0],
+            velocity: [Math.random() * 0.005 - 0.0025, 0, 0.001],
+          });
+        }
 
         return (nextBubbles);
       });
@@ -62,15 +63,42 @@ function Bubbles({ loops, noiseThreshold, currentVolume }) {
   });
 
   return (
-    <group>
-      {bubbles.map((bubble) => (
-        <Bubble
-          key={bubble.id}
-          bubble={bubble}
-          debug={debug}
+    <>
+      <group>
+        {bubbles.map((bubble) => (
+          <Bubble
+            key={bubble.id}
+            bubble={bubble}
+            debug={debug}
+          />
+        ))}
+      </group>
+      <MarchingCubes
+        resolution={50}
+        maxPolyCount={50000}
+        enableUvs
+        enableColors
+      >
+        {bubbles.map((bubble) => (
+          <Bubble
+            key={bubble.id}
+            bubble={bubble}
+            blob
+          />
+        ))}
+        <MarchingPlane
+          planeType="z"
+          strength={0.5}
+          subtract={6}
         />
-      ))}
-    </group>
+        <meshPhysicalMaterial
+          color={new Color('rgb(200, 200, 200)')}
+          transmission={0.9}
+          roughness={0.1}
+          metalness={0.3}
+        />
+      </MarchingCubes>
+    </>
   );
 }
 
@@ -81,7 +109,7 @@ export default function Scene({ loops, width, height, debug, noiseThreshold, cur
       style={{ width, height }}
     >
       <Environment preset="city" />
-      <PerspectiveCamera makeDefault fov={15} near={0.1} far={50} position={[0, 0, 3.8]} />
+      <PerspectiveCamera makeDefault fov={15} near={0.1} far={50} position={[0, 0, 3]} />
       <OrbitControls />
       <directionalLight />
       <Bubbles

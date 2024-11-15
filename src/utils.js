@@ -21,8 +21,12 @@ export const handConnections = [
   [19, 20], // Pinky
 ];
 
-const potentialLoops = [
-
+// array of pairs of fingertips that when touching, the loop describes their shape
+// might require flattening the hands array so that it's a single array of 40 points to be easier for looping
+const pairsAndLoops = [
+  {
+    pairs: [],
+  },
 ];
 
 export const getColors = (colorAmount) => {
