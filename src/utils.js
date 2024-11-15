@@ -21,6 +21,10 @@ export const handConnections = [
   [19, 20], // Pinky
 ];
 
+const potentialLoops = [
+
+];
+
 export const getColors = (colorAmount) => {
   const colors = Array.from({ length: colorAmount }, (_, i) => {
     const hue = (i * (360 / colorAmount)) % 360;
@@ -191,4 +195,43 @@ export const findLoops = ({ hands, touchingThreshold, minArea }) => {
   });
 
   return sizedLoops;
+};
+
+function pointInPolygon({ point, polygon }) {
+  let inside = false;
+  for (let i = 0; i < (polygon.length - 1); i += 1) {
+    const p1x = polygon[i].x;
+    const p1y = polygon[i].y;
+    const p2x = polygon[i + 1].x;
+    const p2y = polygon[i + 1].y;
+    if ((p1y < point.y && p2y >= point.y) || (p2y < point.y && p1y >= point.y)) { // this edge is crossing the horizontal ray of testpoint
+      if ((p1x + (point.y - p1y) / (p2y - p1y) * (p2x - p1x)) < point.x) { // checking special cases (holes, self-crossings, self-overlapping, horizontal edges, etc.)
+        inside = !inside;
+      }
+    }
+  }
+  return inside;
+}
+
+export const randomPointInPolygon = (polygon) => {
+  const bounds = polygon.reduce((acc, point) => ({
+    minX: Math.min(acc.minX, point.x),
+    minY: Math.min(acc.minY, point.y),
+    maxX: Math.max(acc.maxX, point.x),
+    maxY: Math.max(acc.maxY, point.y),
+  }), { minX: Infinity, minY: Infinity, maxX: -Infinity, maxY: -Infinity });
+
+  let point = {
+    x: bounds.minX + (Math.random() * (bounds.maxX - bounds.minX)),
+    y: bounds.minY + (Math.random() * (bounds.maxY - bounds.minY)),
+  };
+
+  while (!pointInPolygon({ point, polygon })) {
+    point = {
+      x: bounds.minX + (Math.random() * (bounds.maxX - bounds.minX)),
+      y: bounds.minY + (Math.random() * (bounds.maxY - bounds.minY)),
+    };
+  }
+
+  return point;
 };
