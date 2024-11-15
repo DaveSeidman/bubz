@@ -26,21 +26,18 @@ function App() {
   const basePath = import.meta.env.BASE_URL || '/';
   const colorAmount = 10;
   const colors = getColors(colorAmount);
-  // console.log(brightColors)
-  // Added state and refs for audio processing
   const [currentVolume, setCurrentVolume] = useState(0); // Measured volume level
   const audioContextRef = useRef(null);
   const analyserRef = useRef(null);
-  // Add this ref to store the animation frame ID
   const animationFrameIdRef = useRef(null);
 
   const {
-    minimumArea,
+    minArea,
     noiseThreshold,
     debug
   } = useControls({
-    minimumArea: { value: 4000, min: 1000, max: 20000 },
-    noiseThreshold: { value: 20, min: 1, max: 100 },
+    minArea: { value: .003, min: 0, max: .01 },
+    noiseThreshold: { value: .05, min: 0, max: 1 },
     debug: { value: false }
   });
 
@@ -78,7 +75,7 @@ function App() {
 
     ctx.current.clearRect(0, 0, width, height);
 
-    const nextLoops = findLoops(hands, touchingThreshold, width, height, minimumArea);
+    const nextLoops = findLoops({ hands, touchingThreshold, minArea });
 
     setLoops((prevLoops) => {
       const updatedLoops = [];
@@ -90,7 +87,7 @@ function App() {
           const prevLoop = unmatchedPrevLoops[i];
           // TODO: make this an adjustable value
           // TODO: check for point indexes for more accurate matching
-          if (distance(nextLoop.center, prevLoop.center) < 50) {
+          if (distance(nextLoop.center, prevLoop.center) < .2) {
             // Match found
             matched = true;
             // Update the loop
@@ -151,18 +148,16 @@ function App() {
     ctx.current.lineWidth = 2;
     ctx.current.font = '20px Arial';
     loops.forEach(({ id, points, center, confirmed }, index) => {
-      if (confirmed) {
-        ctx.current.beginPath();
-        ctx.current.strokeStyle = colors[id % colorAmount];
-        ctx.current.fillStyle = colors[id % colorAmount];
-        ctx.current.moveTo(points[0].x, points[0].y);
-        points.forEach((point) => {
-          ctx.current.lineTo(point.x, point.y);
-        });
-        ctx.current.closePath();
-        ctx.current.stroke();
-        ctx.current.fillText(id, center.x, center.y);
-      }
+      ctx.current.beginPath();
+      ctx.current.strokeStyle = colors[id % colorAmount]; // TODO: make the color 50% transparent until confirmed
+      ctx.current.fillStyle = colors[id % colorAmount];
+      ctx.current.moveTo(points[0].x * width, points[0].y * height);
+      points.forEach((point) => {
+        ctx.current.lineTo(point.x * width, point.y * height);
+      });
+      ctx.current.closePath();
+      ctx.current.stroke();
+      if (confirmed) ctx.current.fillText(id, center.x * width, center.y * height);
     });
   }, [loops])
 
@@ -386,6 +381,8 @@ function App() {
           width={width}
           height={height}
           debug={debug}
+          currentVolume={currentVolume}
+          noiseThreshold={noiseThreshold}
         />
       </div>
     </div>
