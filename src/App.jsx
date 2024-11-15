@@ -146,7 +146,9 @@ function App() {
 
   useEffect(() => {
     ctx.current.lineWidth = 2;
-    ctx.current.font = '20px Arial';
+    ctx.current.font = '20px Courier';
+    ctx.current.textAlign = 'center';
+    ctx.current.textBaseline = 'middle';
     loops.forEach(({ id, points, center, confirmed }, index) => {
       ctx.current.beginPath();
       ctx.current.strokeStyle = colors[id % colorAmount]; // TODO: make the color 50% transparent until confirmed
@@ -157,7 +159,13 @@ function App() {
       });
       ctx.current.closePath();
       ctx.current.stroke();
-      if (confirmed) ctx.current.fillText(id, center.x * width, center.y * height);
+      if (confirmed) {
+        ctx.current.save();
+        ctx.current.translate(center.x * width, center.y * height);
+        ctx.current.scale(-1, 1);
+        ctx.current.fillText(id, 0, 0);
+        ctx.current.restore();
+      }
     });
   }, [loops])
 
