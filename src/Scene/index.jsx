@@ -97,6 +97,7 @@ function Bubbles({ loops, noiseThreshold, currentVolume, mcResolution, mcPolyCou
           roughness={0.2} // Reduce roughness for sharper reflections
           transmission={0.99}
           reflectivity={0.9}
+          // opacity={0.5}
           color={new Color(0xbbddee)}
         />
       </MarchingCubes>
@@ -123,7 +124,7 @@ export default function Scene({ loops, width, height, noiseThreshold, currentVol
         mcResolution={mcResolution}
         mcPolyCount={mcPolyCount}
       />
-      {/* <gridHelper args={[1, 10]} rotation={[Math.PI / 2, 0, 0]} /> */}
+      <gridHelper args={[1, 10]} rotation={[Math.PI / 2, 0, 0]} />
     </Canvas>
   );
 }

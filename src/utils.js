@@ -1,32 +1,25 @@
-export const handConnections = [
-  [0, 1],
-  [1, 2],
-  [2, 3],
-  [3, 4], // Thumb
-  [0, 5],
-  [5, 6],
-  [6, 7],
-  [7, 8], // Index finger
-  [0, 9],
-  [9, 10],
-  [10, 11],
-  [11, 12], // Middle finger
-  [0, 13],
-  [13, 14],
-  [14, 15],
-  [15, 16], // Ring finger
-  [0, 17],
-  [17, 18],
-  [18, 19],
-  [19, 20], // Pinky
-];
-
 // array of pairs of fingertips that when touching, the loop describes their shape
-// might require flattening the hands array so that it's a single array of 40 points to be easier for looping
 const pairsAndLoops = [
-  {
-    pairs: [],
-  },
+  // left thumb and left fingers
+  { pairs: [[4, 8]], loop: [2, 3, 4, 8, 7, 6, 5] },
+  { pairs: [[4, 12]], loop: [2, 3, 4, 12, 11, 10, 9] },
+  { pairs: [[4, 16]], loop: [2, 3, 4, 16, 15, 14, 13] },
+  { pairs: [[4, 20]], loop: [2, 3, 4, 20, 19, 18, 17] },
+  // right thumb and right fingers
+  { pairs: [[25, 29]], loop: [23, 24, 25, 29, 28, 27, 26] },
+  { pairs: [[25, 33]], loop: [23, 24, 25, 33, 32, 31, 30] },
+  { pairs: [[25, 37]], loop: [23, 24, 25, 37, 36, 35, 34] },
+  { pairs: [[25, 41]], loop: [23, 24, 25, 41, 40, 39, 38] },
+  // thumbs and pointers
+  { pairs: [[4, 25], [8, 29]], loop: [2, 3, 4, 25, 24, 23, 26, 27, 28, 29, 8, 7, 6, 5] },
+  { pairs: [[4, 29], [8, 25]], loop: [2, 3, 4, 29, 28, 27, 26, 23, 24, 25, 8, 7, 6, 5] },
+  // pointers and middles
+  { pairs: [[8, 29], [12, 33]], loop: [5, 6, 7, 29, 28, 27, 26, 30, 31, 32, 33, 11, 10, 9] },
+  { pairs: [[8, 33], [12, 29]], loop: [5, 6, 7, 33, 32, 31, 30, 26, 27, 27, 29, 11, 10, 9] },
+  // middles and rings
+  // { pairs: [[12, 33], [16, 37]], loop: [9, 10, 11, 33, 32, 31, 30, 34, 35, 36, 37, 15, 14, 13] },
+  // { pairs: [[12, 37], [16, 33]], loop: [9, 10, 11, 37, 36, 35, 34, 30, 31, 32, 33, 15, 14, 13] },
+
 ];
 
 export const getColors = (colorAmount) => {
@@ -63,134 +56,21 @@ const polygonArea = (points) => Math.abs(points.reduce((sum, { x, y }, i, arr) =
 
 export const findLoops = ({ hands, touchingThreshold, minArea }) => {
   const loops = [];
-  hands.forEach((hand) => {
-    // if thumb and finger 1 are touching
-    if (distance(hand[4], hand[8]) < touchingThreshold) {
-      loops.push({
-        color: 'rgba(34, 77, 34, .5)',
-        points:
-          [
-            { x: hand[2].x, y: hand[2].y },
-            { x: hand[3].x, y: hand[3].y },
-            { x: hand[4].x, y: hand[4].y },
-            { x: hand[8].x, y: hand[8].y },
-            { x: hand[7].x, y: hand[7].y },
-            { x: hand[6].x, y: hand[6].y },
-            { x: hand[5].x, y: hand[5].y },
-          ],
-      });
-    }
-    // if thumb and finger 2 are touching
-    if (distance(hand[4], hand[12]) < touchingThreshold) {
-      loops.push({
-        color: 'rgba(44, 77, 34, .5)',
-        points:
-          [
-            { x: hand[2].x, y: hand[2].y },
-            { x: hand[3].x, y: hand[3].y },
-            { x: hand[4].x, y: hand[4].y },
-            { x: hand[12].x, y: hand[12].y },
-            { x: hand[11].x, y: hand[11].y },
-            { x: hand[10].x, y: hand[10].y },
-            { x: hand[9].x, y: hand[9].y },
-          ],
-      });
-    }
-    // if thumb and finger 3 are touching
-    if (distance(hand[4], hand[16]) < touchingThreshold) {
-      loops.push({
-        color: 'rgba(72, 77, 34, .5)',
-        points:
-          [
-            { x: hand[2].x, y: hand[2].y },
-            { x: hand[3].x, y: hand[3].y },
-            { x: hand[4].x, y: hand[4].y },
-            { x: hand[16].x, y: hand[16].y },
-            { x: hand[15].x, y: hand[15].y },
-            { x: hand[14].x, y: hand[14].y },
-            { x: hand[13].x, y: hand[13].y },
-          ],
-      });
-    }
-    // if thumb and finger 4 are touching
-    if (distance(hand[4], hand[20]) < touchingThreshold) {
-      loops.push({
-        color: 'rgba(77, 60, 34, .5)',
-        points:
-          [
-            // thumb base to tip
-            { x: hand[2].x, y: hand[2].y },
-            { x: hand[3].x, y: hand[3].y },
-            { x: hand[4].x, y: hand[4].y },
-            // finger 4 tip to base
-            { x: hand[20].x, y: hand[20].y },
-            { x: hand[19].x, y: hand[19].y },
-            { x: hand[18].x, y: hand[18].y },
-            { x: hand[17].x, y: hand[17].y },
-          ],
-      });
+  const flatHands = hands.flat();
+  pairsAndLoops.forEach(({ pairs, loop }) => {
+    const allPairsTouching = pairs.every((pair) => (flatHands[pair[0]] && flatHands[pair[1]]) && distance(flatHands[pair[0]], flatHands[pair[1]]) < touchingThreshold);
+    if (allPairsTouching) {
+      loops.push(loop);
     }
   });
 
-  if (hands.length === 2) {
-    // left thumb and right thumb touching
-    if (distance(hands[0][4], hands[1][4]) < touchingThreshold
-      // and left finger 1 and right finger 1 are touching
-      && distance(hands[0][8], hands[1][8]) < touchingThreshold) {
-      loops.push({
-        color: '#FF44FF',
-        points: [
-          // left thumb base to tip
-          { x: hands[0][2].x, y: hands[0][2].y },
-          { x: hands[0][3].x, y: hands[0][3].y },
-          { x: hands[0][4].x, y: hands[0][4].y },
-          // right thumb tip to base
-          { x: hands[1][4].x, y: hands[1][4].y },
-          { x: hands[1][3].x, y: hands[1][3].y },
-          { x: hands[1][2].x, y: hands[1][2].y },
-          // right finger 1 base to tip
-          { x: hands[1][5].x, y: hands[1][5].y },
-          { x: hands[1][6].x, y: hands[1][6].y },
-          { x: hands[1][7].x, y: hands[1][7].y },
-          { x: hands[1][8].x, y: hands[1][8].y },
-          // left finger 1 tip to base
-          { x: hands[0][8].x, y: hands[0][8].y },
-          { x: hands[0][7].x, y: hands[0][7].y },
-          { x: hands[0][6].x, y: hands[0][6].y },
-          { x: hands[0][5].x, y: hands[0][5].y },
-        ],
-      });
-    }
-
-    // left thumb and right finger 1 touching
-    if (distance(hands[0][4], hands[1][8]) < touchingThreshold
-      // and left finger 1 and right thumb are touching
-      && distance(hands[0][8], hands[1][4]) < touchingThreshold) {
-      loops.push({
-        color: '#0044FF',
-        points: [
-          // left thumb base to tip
-          { x: hands[0][2].x, y: hands[0][2].y },
-          { x: hands[0][3].x, y: hands[0][3].y },
-          { x: hands[0][4].x, y: hands[0][4].y },
-          // right finger 1 tip to base
-          { x: hands[1][8].x, y: hands[1][8].y },
-          { x: hands[1][7].x, y: hands[1][7].y },
-          { x: hands[1][6].x, y: hands[1][6].y },
-          { x: hands[1][5].x, y: hands[1][5].y },
-          // right thumb base to tip
-          { x: hands[1][2].x, y: hands[1][2].y },
-          { x: hands[1][3].x, y: hands[1][3].y },
-          { x: hands[1][4].x, y: hands[1][4].y },
-          // left finger 1 tip to base
-          { x: hands[0][8].x, y: hands[0][8].y },
-          { x: hands[0][7].x, y: hands[0][7].y },
-          { x: hands[0][6].x, y: hands[0][6].y },
-          { x: hands[0][5].x, y: hands[0][5].y },
-        ],
-      });
-    }
-  }
+  // attach point data to point indices
+  loops.forEach((loop) => {
+    loop.points = [];
+    loop.forEach((i) => {
+      loop.points.push({ x: flatHands[i].x, y: flatHands[i].y });
+    });
+  });
 
   const sizedLoops = loops.filter((loop) => polygonArea(loop.points) >= minArea);
 
