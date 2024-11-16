@@ -134,14 +134,10 @@ function App() {
         if (prevLoop.missingFrames <= missingFramesThreshold) {
           updatedLoops.push(prevLoop);
         }
-        // Else, remove the loop by not including it in updatedLoops
       });
 
       return updatedLoops;
     });
-
-    // Optionally, display current volume level
-    // For example, you might want to draw it on the canvas or update some element
   }, [hands]);
 
   useEffect(() => {
@@ -308,10 +304,6 @@ function App() {
     if (videoElementRef.current) {
       videoElementRef.current.pause();
       videoElementRef.current.src = '';
-      // videoElementRef.current.addEventListener('load', () => {
-      // console.log('loaded')
-      // videoElementRef.current.muted = false;
-      // })
       videoElementRef.current.load();
     }
     // Create a new video element
@@ -391,6 +383,7 @@ function App() {
           debug={debug}
           currentVolume={currentVolume}
           noiseThreshold={noiseThreshold}
+          videoElement={videoElementRef.current}
         />
       </div>
     </div>
