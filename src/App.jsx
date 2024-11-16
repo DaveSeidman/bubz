@@ -40,7 +40,7 @@ function App() {
   } = useControls({
     minArea: { value: .003, min: 0, max: .05 },
     noiseThreshold: { value: .05, min: 0, max: 1 },
-    mcResolution: { label: 'Blob Resolution', value: 40, min: 10, max: 8, step: .1 },
+    mcResolution: { label: 'Blob Resolution', value: 60, min: 10, max: 80 },
     mcPolyCount: { label: 'Blob PolyCount', value: 50000, min: 1000, max: 100000 },
     debug: { value: false }
   });
