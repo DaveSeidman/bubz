@@ -283,7 +283,7 @@ function App() {
       videoElement.srcObject = stream.current;
       videoElementRef.current = videoElement;
 
-      videoElement.play();
+      // videoElement.play();
       videoElement.requestVideoFrameCallback((now, metadata) => {
         handleFrameRef.current(now, metadata);
       });
@@ -319,7 +319,7 @@ function App() {
       canvasRef.current.height = videoElement.videoHeight;
       setWidth(videoElement.videoWidth);
       setHeight(videoElement.videoHeight);
-      videoElement.play();
+      // videoElement.play();
       videoElement.requestVideoFrameCallback((now, metadata) => {
         handleFrameRef.current(now, metadata);
       });
