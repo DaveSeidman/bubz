@@ -34,10 +34,14 @@ function App() {
   const {
     minArea,
     noiseThreshold,
-    debug
+    mcResolution,
+    mcPolyCount,
+    debug,
   } = useControls({
     minArea: { value: .003, min: 0, max: .01 },
     noiseThreshold: { value: .05, min: 0, max: 1 },
+    mcResolution: { label: 'Blob Resolution', value: 50, min: 10, max: 500 },
+    mcPolyCount: { label: 'Blob PolyCount', value: 50000, min: 1000, max: 100000 },
     debug: { value: false }
   });
 
@@ -142,7 +146,7 @@ function App() {
 
   useEffect(() => {
     ctx.current.lineWidth = 2;
-    ctx.current.font = '20px Courier';
+    ctx.current.font = '10px Courier';
     ctx.current.textAlign = 'center';
     ctx.current.textBaseline = 'middle';
     loops.forEach(({ id, points, center, confirmed }, index) => {
@@ -384,6 +388,8 @@ function App() {
           currentVolume={currentVolume}
           noiseThreshold={noiseThreshold}
           videoElement={videoElementRef.current}
+          mcResolution={mcResolution}
+          mcPolyCount={mcPolyCount}
         />
       </div>
     </div>

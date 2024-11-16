@@ -22,7 +22,7 @@ function Bubble({ bubble, blob }) {
   });
 
   return blob
-    ? (<MarchingCube args={[0.0025]} position={position} strength={0.1} subtract={12} />)
+    ? (<MarchingCube position={position} strength={0.1} subtract={12} />)
     : (
       <mesh position={position} visible={false}>
         <sphereGeometry args={[0.025, 4, 2]} />
@@ -31,7 +31,7 @@ function Bubble({ bubble, blob }) {
     );
 }
 
-function Bubbles({ loops, noiseThreshold, currentVolume }) {
+function Bubbles({ loops, noiseThreshold, currentVolume, mcResolution, mcPolyCount }) {
   const [bubbles, setBubbles] = useState([]);
   const maxBubbleRate = 50;
   const lastBubbleTime = useRef(new Date().getTime());
@@ -73,16 +73,9 @@ function Bubbles({ loops, noiseThreshold, currentVolume }) {
           />
         ))}
       </group>
-      {/* <mesh>
-        <torusKnotGeometry args={[0.1, 0.03, 128]} />
-        <meshStandardMaterial
-          metalness={1}
-          roughness={0}
-        />
-      </mesh> */}
       <MarchingCubes
-        resolution={50}
-        maxPolyCount={50000}
+        resolution={mcResolution}
+        maxPolyCount={mcPolyCount}
         enableUvs
         enableColors
       >
@@ -99,20 +92,19 @@ function Bubbles({ loops, noiseThreshold, currentVolume }) {
           subtract={6}
         />
         <meshPhysicalMaterial
-          envMapIntensity={10} // Adjust the intensity of the environment reflection
-          metalness={0.3} // Increase metalness for better reflections
+          envMapIntensity={4} // Adjust the intensity of the environment reflection
+          metalness={0.1} // Increase metalness for better reflections
           roughness={0.2} // Reduce roughness for sharper reflections
-          transmission={0.5}
-          reflectivity={1}
-          opacity={0.5}
-          color={new Color(0xddeecc)}
+          transmission={0.99}
+          reflectivity={0.9}
+          color={new Color(0xbbddee)}
         />
       </MarchingCubes>
     </>
   );
 }
 
-export default function Scene({ loops, width, height, noiseThreshold, currentVolume, videoElement }) {
+export default function Scene({ loops, width, height, noiseThreshold, currentVolume, videoElement, mcResolution, mcPolyCount }) {
   return (
     <Canvas
       className="scene"
@@ -123,11 +115,13 @@ export default function Scene({ loops, width, height, noiseThreshold, currentVol
       />
       <PerspectiveCamera makeDefault fov={15} near={0.1} far={50} position={[0, 0, 3]} />
       <OrbitControls />
-      <directionalLight intensity={10} />
+      <directionalLight intensity={1} />
       <Bubbles
         loops={loops}
         noiseThreshold={noiseThreshold}
         currentVolume={currentVolume}
+        mcResolution={mcResolution}
+        mcPolyCount={mcPolyCount}
       />
       {/* <gridHelper args={[1, 10]} rotation={[Math.PI / 2, 0, 0]} /> */}
     </Canvas>
