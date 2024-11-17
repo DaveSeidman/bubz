@@ -5,37 +5,46 @@ import { Color } from 'three';
 import { randomPointInPolygon } from '../utils';
 import CustomEnvironment from './CustomEnvironment';
 import './index.scss';
+import { Physics, RigidBody, useRapier } from '@react-three/rapier';
 
-function Bubble({ bubble, blob }) {
-  const [position, setPosition] = useState(bubble.position);
-
+function Bubble({ bubble }) {
+  const bubbleRef = useRef();
   useFrame(() => {
-    setPosition((prevPosition) => {
-      bubble.velocity[1] += 0.00025;
-      const nextPosition = [...prevPosition];
-      nextPosition[0] += bubble.velocity[0];
-      nextPosition[1] += bubble.velocity[1];
-      nextPosition[2] += bubble.velocity[2];
-      if (prevPosition[1] > 1) bubble.offscreen = true;
-      return nextPosition;
-    });
+    if (bubbleRef.current) {
+      const position = bubbleRef.current.translation();
+      if (position.x < -2 || position.x > 2 || position.y < -2 || position.y > 2) {
+        bubble.offscreen = true;
+      }
+    }
   });
 
-  return blob
-    ? (<MarchingCube position={position} strength={0.1} subtract={12} />)
-    : (
-      <mesh position={position} visible={false}>
-        <sphereGeometry args={[0.025, 4, 2]} />
-        <meshNormalMaterial flatShading />
+  return (
+    <RigidBody
+      ref={bubbleRef}
+      position={bubble.position}
+      type="dynamic"
+      onReady={(body) => {
+        console.log('here', body);
+        body.applyImpulse(
+          { x: (Math.random() - 0.5) * 0.1, y: Math.random() * 0.1 + 0.2, z: 0 },
+          true,
+        );
+      }}
+    >
+      <mesh>
+        <sphereGeometry args={[0.2, 12, 6]} />
+        <meshNormalMaterial />
       </mesh>
-    );
+    </RigidBody>
+  );
 }
 
-function Bubbles({ loops, noiseThreshold, currentVolume, mcResolution, mcPolyCount }) {
+function Bubbles({ loops, noiseThreshold, currentVolume, mcResolution, mcPolyCount, debug }) {
   const [bubbles, setBubbles] = useState([]);
   const maxBubbleRate = 50;
   const lastBubbleTime = useRef(new Date().getTime());
   useFrame(() => {
+    console.log(bubbles.length);
     const currentTime = new Date().getTime();
     if (currentVolume > noiseThreshold
       && currentTime - lastBubbleTime.current > maxBubbleRate
@@ -63,7 +72,9 @@ function Bubbles({ loops, noiseThreshold, currentVolume, mcResolution, mcPolyCou
   });
 
   return (
-    <>
+    // debug
+    //   ? (
+    <Physics gravity={[0, -0.1, 0]}>
       <group>
         {bubbles.map((bubble) => (
           <Bubble
@@ -73,39 +84,11 @@ function Bubbles({ loops, noiseThreshold, currentVolume, mcResolution, mcPolyCou
           />
         ))}
       </group>
-      <MarchingCubes
-        resolution={mcResolution}
-        maxPolyCount={mcPolyCount}
-        enableUvs
-        enableColors
-      >
-        {bubbles.map((bubble) => (
-          <Bubble
-            key={bubble.id}
-            bubble={bubble}
-            blob
-          />
-        ))}
-        <MarchingPlane
-          planeType="z"
-          strength={0.5}
-          subtract={6}
-        />
-        <meshPhysicalMaterial
-          envMapIntensity={4} // Adjust the intensity of the environment reflection
-          metalness={0.1} // Increase metalness for better reflections
-          roughness={0.2} // Reduce roughness for sharper reflections
-          transmission={0.99}
-          reflectivity={0.9}
-          // opacity={0.5}
-          color={new Color(0xbbddee)}
-        />
-      </MarchingCubes>
-    </>
+    </Physics>
   );
 }
 
-export default function Scene({ loops, width, height, noiseThreshold, currentVolume, videoElement, mcResolution, mcPolyCount }) {
+export default function Scene({ loops, width, height, noiseThreshold, currentVolume, videoElement, mcResolution, mcPolyCount, debug }) {
   return (
     <Canvas
       className="scene"
@@ -114,17 +97,25 @@ export default function Scene({ loops, width, height, noiseThreshold, currentVol
       <CustomEnvironment
         videoElement={videoElement}
       />
-      <PerspectiveCamera makeDefault fov={15} near={0.1} far={50} position={[0, 0, 3]} />
+      <PerspectiveCamera
+        makeDefault
+        fov={15}
+        near={0.1}
+        // far={3.82}
+        far={100}
+        position={[0, 0, 3]}
+      />
       <OrbitControls />
       <directionalLight intensity={1} />
       <Bubbles
+        debug={debug}
         loops={loops}
         noiseThreshold={noiseThreshold}
         currentVolume={currentVolume}
         mcResolution={mcResolution}
         mcPolyCount={mcPolyCount}
       />
-      <gridHelper args={[1, 10]} rotation={[Math.PI / 2, 0, 0]} />
+      {/* <gridHelper args={[1, 10]} rotation={[Math.PI / 2, 0, 0]} /> */}
     </Canvas>
   );
 }
