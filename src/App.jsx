@@ -6,6 +6,8 @@ import Scene from './Scene';
 import testVid from './assets/test-vid.mp4'
 
 function App() {
+  const basePath = import.meta.env.BASE_URL || '/';
+
   const [handLandmarker, setHandLandmarker] = useState(null);
   const [webcamRunning, setWebcamRunning] = useState(false);
   const [hands, setHands] = useState([]);
@@ -23,7 +25,6 @@ function App() {
   const loopIdCounter = useRef(1);
   const confirmationThreshold = 3; // Number of consecutive frames before assigning an ID
   const missingFramesThreshold = 3; // Number of frames before removing a loop
-  const basePath = import.meta.env.BASE_URL || '/';
   const colorAmount = 10;
   const colors = getColors(colorAmount);
   const [currentVolume, setCurrentVolume] = useState(0); // Measured volume level
@@ -263,12 +264,10 @@ function App() {
       }
     } else {
       // Stop video if playing
-      if (videoMode === 'video') {
-        if (videoElementRef.current) {
-          videoElementRef.current.pause();
-          videoElementRef.current.src = '';
-          videoElementRef.current.load();
-        }
+      if (videoMode === 'video' && videoElementRef.current) {
+        videoElementRef.current.pause();
+        videoElementRef.current.src = '';
+        videoElementRef.current.load();
       }
       // Start webcam with microphone access
       const constraints = { video: true, audio: true }; // Include audio
