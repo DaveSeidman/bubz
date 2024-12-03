@@ -1,23 +1,23 @@
 import React, { useEffect, useState } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { PerspectiveCamera, OrbitControls } from '@react-three/drei';
-import { EffectComposer, SSAO } from '@react-three/postprocessing';
+import { Bloom, EffectComposer, SSAO } from '@react-three/postprocessing';
 import { Perf } from 'r3f-perf';
 import Environment from './Environment';
 import Bubbles from './Bubbles';
 import Blobs from './Blobs';
 import './index.scss';
 
-export default function Scene({ loops, width, height, noiseThreshold, currentVolume, videoElement, mcResolution, mcPolyCount, debug }) {
+export default function Scene({ loops, width, height, noiseThreshold, currentVolume, videoElement, mcResolution, mcPolyCount, balls, blobs }) {
   const [bubbles, setBubbles] = useState([]);
 
   return (
     <Canvas
       className="scene"
       style={{ width, height }}
-      gl={{ alpha: true, stencil: false, depth: false, antialias: false }}
-      shadows
-      onCreated={(state) => (state.gl.toneMappingExposure = 1.5)}
+      gl={{ alpha: true, stencil: false, depth: true, antialias: false }}
+    // shadows
+    // onCreated={(state) => (state.gl.toneMappingExposure = 2)}
     >
       <Perf position="bottom-left" />
       <Environment videoElement={videoElement} />
@@ -26,28 +26,34 @@ export default function Scene({ loops, width, height, noiseThreshold, currentVol
         fov={10}
         near={0.01}
         far={10}
-        position={[0, 0, 3]}
+        position={[0, 0, 5]}
       />
-      <OrbitControls />
+      {/* <OrbitControls /> */}
       {/* <ambientLight intensity={3} /> */}
       {/* <directionalLight castShadow intensity={2} position={[2, 3, 4]} /> */}
       <spotLight position={[4, 2, 2]} intensity={300} penumbra={0.1} angle={2} color="white" castShadow shadow-mapSize={[64, 64]} />
       <Bubbles
-        debug={debug}
+        balls={balls}
         bubbles={bubbles}
         setBubbles={setBubbles}
         loops={loops}
         noiseThreshold={noiseThreshold}
         currentVolume={currentVolume}
       />
-      {!debug && (
+      {blobs && (
         <Blobs
           bubbles={bubbles}
           mcPolyCount={mcPolyCount}
           mcResolution={mcResolution}
         />
       )}
-
+      {/* <EffectComposer>
+        <Bloom
+          luminanceThreshold={0.7}
+          intensity={3}
+        // resolutionScale={2}
+        />
+      </EffectComposer> */}
     </Canvas>
   );
 }

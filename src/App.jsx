@@ -45,13 +45,15 @@ function App() {
     noiseThreshold,
     mcResolution,
     mcPolyCount,
-    debug,
+    balls,
+    blobs
   } = useControls({
     minArea: { value: 0.003, min: 0, max: 0.05 },
     noiseThreshold: { value: 0.05, min: 0, max: 1 },
-    mcResolution: { label: 'Blob Resolution', value: 80, min: 10, max: 120 },
+    mcResolution: { label: 'Blob Resolution', value: 60, min: 10, max: 120 },
     mcPolyCount: { label: 'Blob PolyCount', value: 20000, min: 1000, max: 100000 },
-    debug: { value: false },
+    balls: { value: false },
+    blobs: { value: true },
   });
 
   const options = {
@@ -323,7 +325,8 @@ function App() {
           loops={loops}
           width={width}
           height={height}
-          debug={debug}
+          balls={balls}
+          blobs={blobs}
           currentVolume={currentVolume}
           noiseThreshold={noiseThreshold}
           videoElement={videoElementRef.current}

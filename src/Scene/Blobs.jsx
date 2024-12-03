@@ -33,16 +33,16 @@ export default function Blobs({ bubbles, mcResolution, mcPolyCount }) {
         subtract={1}
       /> */}
       <MeshTransmissionMaterial
-        transmission={1}
+        transmission={0.98}
         roughness={0.1}
-        thickness={0.1}
+        thickness={0.02}
         // distortion={0.2}
         // distortionScale={0.5}
         backside
         // samples={16}
         // envMapIntensity={200}
-        chromaticAberration={2}
-        opacity={0.1}
+        chromaticAberration={20}
+        // opacity={0.1}
         color={0xeeeeee}
         metalness={0.25}
       />
