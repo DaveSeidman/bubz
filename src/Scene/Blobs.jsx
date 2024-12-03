@@ -21,8 +21,8 @@ export default function Blobs({ bubbles, mcResolution, mcPolyCount }) {
             <MarchingCube
               key={bubble.id}
               position={[x, y, z]}
-              strength={0.2}
-              subtract={24}
+              strength={bubble.scale * 10}
+              subtract={64}
             />
           );
         }
@@ -32,20 +32,29 @@ export default function Blobs({ bubbles, mcResolution, mcPolyCount }) {
         strength={4}
         subtract={1}
       /> */}
-      {/* <MeshTransmissionMaterial
-        transmission={0.9}
-        roughness={0.01}
-        // opacity={0.1}
-        color="0xffffff"
-        distortion={1}
-      /> */}
-      <meshPhysicalMaterial
-        envMapIntensity={1} // Adjust the intensity of the environment reflection
-        metalness={0.6} // Increase metalness for better reflections
-        roughness={0.1} // Reduce roughness for sharper reflections
-        transmission={0.9}
-        reflectivity={0.9}
+      <MeshTransmissionMaterial
+        transmission={1}
+        roughness={0.1}
+        thickness={0.1}
+        // distortion={0.2}
+        // distortionScale={0.5}
+        backside
+        // samples={16}
+        // envMapIntensity={200}
+        chromaticAberration={2}
+        opacity={0.1}
+        color={0xeeeeee}
+        metalness={0.25}
       />
+      {/* <meshPhysicalMaterial
+        // envMapIntensity={0} // Adjust the intensity of the environment reflection
+        metalness={0.2} // Increase metalness for better reflections
+        roughness={0.1} // Reduce roughness for sharper reflections
+        transmission={0.99}
+        reflectivity={0.9}
+        // thickness={2}
+        color={0xbbbbbb}
+      /> */}
       {/* <meshNormalMaterial /> */}
     </MarchingCubes>
   );

@@ -25,7 +25,7 @@ export default function Environment({ videoElement }) {
     };
 
     // videoElement.addEventListener('timeupdate', handleTimeUpdate);
-    const interval = setInterval(handleTimeUpdate, 100);
+    const interval = setInterval(handleTimeUpdate, 30);
 
     return () => {
       clearInterval(interval);

@@ -8,7 +8,7 @@ import Bubble from './Bubble'; // Import your Bubble component
 import plusImage from '../assets/plus.png';
 import { randomPointInPolygon } from '../utils';
 
-function Bubbles({ bubbles, setBubbles, loops, noiseThreshold, currentVolume }) {
+function Bubbles({ bubbles, setBubbles, loops, noiseThreshold, currentVolume, debug }) {
   const maxBubbleRate = 20;
   const lastBubbleTime = useRef(new Date().getTime());
   const texture = useTexture(plusImage);
@@ -80,7 +80,7 @@ function Bubbles({ bubbles, setBubbles, loops, noiseThreshold, currentVolume }) 
           const randomPoint = randomPointInPolygon(randomLoop.points);
           const newBubble = {
             id: bubbleCount.current,
-            position: [randomPoint.x - 0.5, -randomPoint.y + 0.5, Math.random() - 1],
+            position: [randomPoint.x - 0.5, -randomPoint.y + 0.5, Math.random() * 0.5 - 0.5],
             rotation: [Math.random() * Math.PI, Math.random() * Math.PI, Math.random() * Math.PI],
             scale: Math.random() * 0.025 + 0.025,
             ref: createRef(),

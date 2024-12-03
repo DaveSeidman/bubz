@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Canvas } from '@react-three/fiber';
-import { PerspectiveCamera, OrbitControls, MarchingCubes } from '@react-three/drei';
+import { PerspectiveCamera, OrbitControls } from '@react-three/drei';
+import { EffectComposer, SSAO } from '@react-three/postprocessing';
 import { Perf } from 'r3f-perf';
 import Environment from './Environment';
 import Bubbles from './Bubbles';
@@ -10,23 +11,27 @@ import './index.scss';
 export default function Scene({ loops, width, height, noiseThreshold, currentVolume, videoElement, mcResolution, mcPolyCount, debug }) {
   const [bubbles, setBubbles] = useState([]);
 
-  useEffect(() => {
-    console.log(debug);
-  }, [debug]);
-
   return (
-    <Canvas className="scene" style={{ width, height }}>
+    <Canvas
+      className="scene"
+      style={{ width, height }}
+      gl={{ alpha: true, stencil: false, depth: false, antialias: false }}
+      shadows
+      onCreated={(state) => (state.gl.toneMappingExposure = 1.5)}
+    >
       <Perf position="bottom-left" />
       <Environment videoElement={videoElement} />
       <PerspectiveCamera
         makeDefault
         fov={10}
-        near={0.1}
-        far={100}
+        near={0.01}
+        far={10}
         position={[0, 0, 3]}
       />
       <OrbitControls />
-      <directionalLight intensity={1} position={[2, 3, 4]} />
+      {/* <ambientLight intensity={3} /> */}
+      {/* <directionalLight castShadow intensity={2} position={[2, 3, 4]} /> */}
+      <spotLight position={[4, 2, 2]} intensity={300} penumbra={0.1} angle={2} color="white" castShadow shadow-mapSize={[64, 64]} />
       <Bubbles
         debug={debug}
         bubbles={bubbles}
@@ -37,12 +42,12 @@ export default function Scene({ loops, width, height, noiseThreshold, currentVol
       />
       {!debug && (
         <Blobs
-          // debug={debug}
           bubbles={bubbles}
           mcPolyCount={mcPolyCount}
           mcResolution={mcResolution}
         />
       )}
+
     </Canvas>
   );
 }

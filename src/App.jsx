@@ -50,7 +50,7 @@ function App() {
     minArea: { value: 0.003, min: 0, max: 0.05 },
     noiseThreshold: { value: 0.05, min: 0, max: 1 },
     mcResolution: { label: 'Blob Resolution', value: 80, min: 10, max: 120 },
-    mcPolyCount: { label: 'Blob PolyCount', value: 40000, min: 1000, max: 100000 },
+    mcPolyCount: { label: 'Blob PolyCount', value: 20000, min: 1000, max: 100000 },
     debug: { value: false },
   });
 
@@ -288,7 +288,7 @@ function App() {
             style={{ position: 'absolute', zIndex: 10, left: '120px' }}
             onClick={loadVideo}
           >
-            Load Video
+            Start Video
           </button>
           {/* Optionally display current volume level */}
           <div
