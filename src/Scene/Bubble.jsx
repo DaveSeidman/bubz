@@ -4,7 +4,7 @@ import { RigidBody } from '@react-three/rapier';
 const Bubble = forwardRef(({ bubble, texture, balls }, ref) => (
   <RigidBody
     ref={ref}
-    // colliders="ball"
+    colliders="ball"
     // sensor
     position={bubble.position}
     rotation={bubble.rotation}

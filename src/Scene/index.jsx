@@ -16,6 +16,7 @@ export default function Scene({ loops, width, height, noiseThreshold, currentVol
       className="scene"
       style={{ width, height }}
       gl={{ alpha: true, stencil: false, depth: true, antialias: false }}
+      dpr={1}
     // shadows
     // onCreated={(state) => (state.gl.toneMappingExposure = 2)}
     >
@@ -30,8 +31,8 @@ export default function Scene({ loops, width, height, noiseThreshold, currentVol
       />
       {/* <OrbitControls /> */}
       {/* <ambientLight intensity={3} /> */}
-      {/* <directionalLight castShadow intensity={2} position={[2, 3, 4]} /> */}
-      <spotLight position={[4, 2, 2]} intensity={300} penumbra={0.1} angle={2} color="white" castShadow shadow-mapSize={[64, 64]} />
+      <directionalLight intensity={2} position={[2, 3, 4]} />
+      {/* <spotLight position={[1, 2, 1]} intensity={300} penumbra={0.1} angle={2} color="white" castShadow shadow-mapSize={[64, 64]} /> */}
       <Bubbles
         balls={balls}
         bubbles={bubbles}

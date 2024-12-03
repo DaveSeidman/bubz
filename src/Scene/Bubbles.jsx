@@ -96,7 +96,12 @@ function Bubbles({ bubbles, setBubbles, loops, noiseThreshold, currentVolume, ba
   });
 
   return (
-    <Physics gravity={[0, 0.2, 0]}>
+    <Physics
+      gravity={[0, 0.2, 0]}
+      timeStep={1 / 60}
+      maxCcdSubsteps={2}
+      numSolverIterations={1}
+    >
       {bubbles.map((bubble) => (
         <Bubble
           ref={bubble.ref}
