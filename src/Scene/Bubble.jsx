@@ -1,17 +1,18 @@
 import React, { forwardRef } from 'react';
 import { RigidBody } from '@react-three/rapier';
 
-const Bubble = forwardRef(({ bubble, texture }, ref) => (
+const Bubble = forwardRef(({ bubble, texture, debug }, ref) => (
   <RigidBody
     ref={ref}
-    colliders="ball"
+    // colliders="ball"
     // sensor
     position={bubble.position}
     rotation={bubble.rotation}
     type="dynamic"
-    linearDamping={2}
+    linearDamping={1}
+    angularDamping={10}
     friction={0.01}
-    mass={Math.random() * 0.5 + 0.5}
+    mass={bubble.scale}
     restitution={0.1}
     canSleep={false}
     onReady={(body) => {
@@ -27,7 +28,7 @@ const Bubble = forwardRef(({ bubble, texture }, ref) => (
   >
     <mesh scale={[bubble.scale, bubble.scale, bubble.scale]}>
       <sphereGeometry args={[1, 32, 16]} />
-      <meshStandardMaterial map={texture} />
+      <meshStandardMaterial map={texture} visible={debug.checked} />
     </mesh>
   </RigidBody>
 ));

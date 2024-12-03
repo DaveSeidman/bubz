@@ -1,6 +1,8 @@
 import React, { createRef, useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
 import { useTexture } from '@react-three/drei';
+import { Physics } from '@react-three/rapier';
+
 import { RepeatWrapping } from 'three';
 import Bubble from './Bubble'; // Import your Bubble component
 import plusImage from '../assets/plus.png';
@@ -50,8 +52,8 @@ function Bubbles({ bubbles, setBubbles, loops, noiseThreshold, currentVolume }) 
                 const dz = otherPosition.z - position.z;
                 const distanceSq = dx * dx + dy * dy + dz * dz;
 
-                const minDistanceSq = 0.01 * 0.01; // Avoid division by zero
-                const maxDistanceSq = 0.5 * 0.5; // Limit attraction range
+                const minDistanceSq = 0.1 * 0.1; // Avoid division by zero
+                const maxDistanceSq = 0.3 * 0.3; // Limit attraction range
                 // if a bubble is close enough, add a small attraction force
                 if (distanceSq > minDistanceSq && distanceSq < maxDistanceSq) {
                   const strength = 0.00000025 / distanceSq; // Force inversely proportional to distance squared
@@ -94,16 +96,17 @@ function Bubbles({ bubbles, setBubbles, loops, noiseThreshold, currentVolume }) 
   });
 
   return (
-    <group>
+    <Physics gravity={[0, 0.2, 0]}>
       {bubbles.map((bubble) => (
         <Bubble
           ref={bubble.ref}
           key={bubble.id}
           bubble={bubble}
           texture={texture}
+          debug={debug}
         />
       ))}
-    </group>
+    </Physics>
   );
 }
 
