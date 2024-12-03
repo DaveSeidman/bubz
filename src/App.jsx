@@ -61,7 +61,8 @@ function App() {
   useEffect(() => {
     const initializeHandLandmarker = async () => {
       const vision = await FilesetResolver.forVisionTasks(
-        'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.0/wasm'
+        `blow-a-bubble/wasm`
+        // 'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.0/wasm'
       );
       const handLandmarkerInstance = await HandLandmarker.createFromOptions(vision, options);
       setHandLandmarker(handLandmarkerInstance);

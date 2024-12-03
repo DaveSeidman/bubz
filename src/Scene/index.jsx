@@ -1,10 +1,10 @@
 // TODO: add post processing for debug view, ssao
 
-import React, { forwardRef, createRef, useState, useEffect, useRef } from 'react';
-import { Canvas, useFrame } from '@react-three/fiber';
+import React, { forwardRef, useMemo, createRef, useState, useEffect, useRef } from 'react';
+import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { MeshStandardMaterial, SphereGeometry, RepeatWrapping, TextureLoader, Color } from 'three';
 import { PerspectiveCamera, OrbitControls, MarchingCubes, MarchingCube, MarchingPlane, useTexture } from '@react-three/drei';
-import { Physics, RigidBody } from '@react-three/rapier';
+import { Physics, RigidBody, useRapier } from '@react-three/rapier';
 import { Perf } from 'r3f-perf';
 import { randomPointInPolygon } from '../utils';
 import plusImage from '../assets/plus.png';
@@ -23,7 +23,7 @@ function Blobs({ mcResolution, mcPolyCount, bubblePositions }) {
           key={index}
           position={[position.x, position.y, position.z]}
           strength={0.2}
-          subtract={20}
+          subtract={40}
         />
       ))}
       <meshPhysicalMaterial
@@ -39,51 +39,28 @@ function Blobs({ mcResolution, mcPolyCount, bubblePositions }) {
 }
 
 const Bubble = forwardRef(({ bubble, bubblePositions, sharedGeometry, sharedMaterial }, ref) => {
-
-
-  if (ref.current) {
-    const position = ref.current.translation();
-
-    // Check if the bubble is offscreen
-    if (position.x < -1.5 || position.x > 1.5 || position.y < -1.5 || position.y > 1.5) {
-      bubble.offscreen = true;
-    }
-
-    // Attraction logic
-    const attractionForce = { x: 0, y: 0, z: 0 };
-    bubblePositions.forEach((otherPosition, i) => {
-      if (position !== otherPosition) {
-        // const otherPosition = otherBubble.ref.current.translation();
-        const dx = otherPosition.x - position.x;
-        const dy = otherPosition.y - position.y;
-        const dz = otherPosition.z - position.z;
-        const distance = Math.sqrt(dx * dx + dy * dy + dz * dz);
-
-        // Calculate attraction force if within range
-        if (distance > 0.01 && distance < 0.3) {
-          const strength = 0.0000025 / (distance * distance); // Force inversely proportional to distance squared
-          attractionForce.x += dx * strength;
-          attractionForce.y += dy * strength;
-          attractionForce.z += dz * strength;
-        }
-      }
-    });
-
-    // Apply the attraction force
-    ref.current.applyImpulse(attractionForce, true);
+  const { world } = useRapier();
+  // console.log(world);
+  const geometry = useMemo(() => new SphereGeometry(bubble.scale[0] / 10, 12, 18), []);
+  const material = useMemo(() => new MeshStandardMaterial({ roughness: 0.1, metalness: 0.8 }), []);
+  const { position } = bubble;
+  if (position[0] < -0.25 || position[0] > 0.25 || position[1] < -0.25 || position[1] > 0.25) {
+    bubble.offscreen = true;
+    // console.log(world, bubble);
   }
 
   return (
     <RigidBody
       colliders="ball"
-      ref={ref}
+      // ref={ref}
       position={bubble.position}
       rotation={bubble.rotation}
       type="dynamic"
-      linearDamping={1}
+      linearDamping={2}
       friction={0.01}
       restitution={0.1}
-      canSleep={false}
+      canSleep
+      ref={ref}
       onReady={(body) => {
         // Apply an initial impulse to the bubble when it is created
         body.applyImpulse(
@@ -92,11 +69,11 @@ const Bubble = forwardRef(({ bubble, bubblePositions, sharedGeometry, sharedMate
             y: (Math.random() * 0.5) - 0.25,
             z: 1,
           },
-          true
+          true,
         );
       }}
     >
-      <mesh scale={bubble.scale} geometry={sharedGeometry} material={sharedMaterial} />
+      <mesh scale={bubble.scale} geometry={geometry} material={material} />
     </RigidBody>
   );
 });
@@ -104,39 +81,47 @@ const Bubble = forwardRef(({ bubble, bubblePositions, sharedGeometry, sharedMate
 function Bubbles({ bubbles, bubblePositions, setBubbles, setBubblePositions, loops, noiseThreshold, currentVolume, sharedGeometry, sharedMaterial }) {
   const maxBubbleRate = 50;
   const lastBubbleTime = useRef(new Date().getTime());
+  const { scene } = useThree();
 
   useFrame(() => {
     const currentTime = new Date().getTime();
 
     // Update `bubblePositions` with real-time positions from the physics world
-    const updatedPositions = bubbles.map((bubble) => {
-      const bubbleRef = bubble.ref?.current;
-      if (bubbleRef) {
-        const position = bubbleRef.translation();
-        return { x: position.x, y: position.y, z: position.z };
-      }
-      return null;
-    }).filter(Boolean); // Remove any null values
-    setBubblePositions(updatedPositions);
+    // const updatedPositions = bubbles.map((bubble) => {
+    //   const bubbleRef = bubble.ref?.current;
+    //   if (bubbleRef) {
+    //     // const position = bubbleRef.translation();
+    //     // return { x: position.x, y: position.y, z: position.z };
+    //   }
+    //   return null;
+    // })
+    // .filter(Boolean); // Remove any null values
+    // setBubblePositions(updatedPositions);
 
-    // Add new bubbles if conditions are met
+    bubbles.forEach((bubble) => {
+      if (bubble.ref.offscreen) bubble.ref.current.sleep();
+    });
+
+    const nextBubbles = bubbles.filter((bubble) => !bubble.offscreen);
     if (
       // if the user is blowing
-      currentVolume > noiseThreshold &&
+      currentVolume > noiseThreshold
       // and it's been long enough since we've created a bubble
-      currentTime - lastBubbleTime.current > maxBubbleRate &&
+      && currentTime - lastBubbleTime.current > maxBubbleRate
       // and they're making a loop with their fingers
-      loops.length
+      && loops.length
     ) {
       // add a bubble
       const randomLoop = loops[Math.floor(Math.random() * loops.length)];
       const point = randomPointInPolygon(randomLoop.points);
 
       setBubbles((prevBubbles) => {
-        const nextBubbles = [...prevBubbles.filter(bubble => !bubble.offscreen)];
-        // make more or less bubbles depending on the volume
+        // Keep only the bubbles that are not offscreen
+        // const nextBubbles = prevBubbles.filter((bubble) => !bubble.offscreen);
+
+        // Add new bubbles based on the current volume
         for (let i = 0; i < currentVolume * 10; i += 1) {
-          const randomScale = ((Math.random() * 2) + 1) / 3;
+          const randomScale = (Math.random() * 1 + 0.5) / 2;
           nextBubbles.push({
             id: Math.random(),
             position: [point.x - 0.5, -point.y + 0.5, Math.random() - 1],
@@ -145,8 +130,10 @@ function Bubbles({ bubbles, bubblePositions, setBubbles, setBubblePositions, loo
             ref: createRef(), // Add a ref for each bubble
           });
         }
+
         return nextBubbles;
       });
+
       lastBubbleTime.current = currentTime;
     }
   });
@@ -198,9 +185,13 @@ export default function Scene({ loops, width, height, noiseThreshold, currentVol
       undefined,
       (error) => {
         console.error('Texture loading failed', error);
-      }
+      },
     );
   }, []);
+
+  // useEffect(() => {
+  //   console.log(bubblePositions.length)
+  // }, [bubblePositions])
 
   return (
     <Canvas
@@ -223,11 +214,12 @@ export default function Scene({ loops, width, height, noiseThreshold, currentVol
         sharedGeometry={sharedGeometry}
         sharedMaterial={sharedMaterial.current}
       />
-      <Blobs
+      {/*
+        < Blobs
         mcResolution={mcResolution}
-        mcPolyCount={mcPolyCount}
-        bubblePositions={bubblePositions}
-      />
+      mcPolyCount={mcPolyCount}
+      bubblePositions={bubblePositions}
+      /> */}
     </Canvas>
   );
 }
