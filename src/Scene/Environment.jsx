@@ -3,7 +3,7 @@ import { useThree } from '@react-three/fiber';
 import { useVideoTexture } from '@react-three/drei';
 import { PMREMGenerator } from 'three';
 
-export default function CustomEnvironment({ videoElement }) {
+export default function Environment({ videoElement }) {
   const { gl, scene } = useThree();
   const pmremGenerator = new PMREMGenerator(gl);
   const videoTexture = useVideoTexture(videoElement.src || videoElement.srcObject, {
@@ -35,6 +35,4 @@ export default function CustomEnvironment({ videoElement }) {
       videoTexture.dispose();
     };
   }, [videoTexture, videoElement]);
-
-  return null;
 }
