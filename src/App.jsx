@@ -52,7 +52,8 @@ function App() {
     noiseThreshold: { value: 0.05, min: 0, max: 1 },
     mcResolution: { label: 'Blob Resolution', value: 60, min: 10, max: 120 },
     mcPolyCount: { label: 'Blob PolyCount', value: 20000, min: 1000, max: 100000 },
-    balls: { value: false },
+    bones: { value: false }, // TODO: use for drawing joint connections or not
+    balls: { value: true },
     blobs: { value: true },
   });
 
