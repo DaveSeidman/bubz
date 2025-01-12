@@ -4,7 +4,7 @@ import { HandLandmarker, FilesetResolver } from '@mediapipe/tasks-vision';
 import { useControls } from 'leva';
 import { distance, findLoops, getColors } from './utils';
 import Scene from './Scene';
-import testVid from './assets/test-vid.mp4';
+// import testVid from './assets/test-vid.mp4';
 import useAudioMonitor from './AudioMonitor'; // Import the custom hook
 
 function App() {
@@ -37,26 +37,32 @@ function App() {
   const loopIdCounter = useRef(1);
   const confirmationThreshold = 3; // Number of consecutive frames before assigning an ID
   const missingFramesThreshold = 3; // Number of frames before removing a loop
-  const colorAmount = 10;
+  const colorAmount = 6;
   const colors = getColors(colorAmount);
 
   // Controls
   const {
-    minArea,
-    noiseThreshold,
-    mcResolution,
-    mcPolyCount,
+    // minArea,
+    // noiseThreshold,
+    // mcResolution,
+    // mcPolyCount,
+    bones,
     balls,
     blobs
   } = useControls({
-    minArea: { value: 0.003, min: 0, max: 0.05 },
-    noiseThreshold: { value: 0.05, min: 0, max: 1 },
-    mcResolution: { label: 'Blob Resolution', value: 60, min: 10, max: 120 },
-    mcPolyCount: { label: 'Blob PolyCount', value: 20000, min: 1000, max: 100000 },
-    bones: { value: false }, // TODO: use for drawing joint connections or not
+    // minArea: { value: 0.003, min: 0, max: 0.05 },
+    // noiseThreshold: { value: 0.05, min: 0, max: 1 },
+    // mcResolution: { label: 'Blob Resolution', value: 60, min: 10, max: 120 },
+    // mcPolyCount: { label: 'Blob PolyCount', value: 20000, min: 1000, max: 100000 },
+    bones: { value: true },
     balls: { value: true },
     blobs: { value: true },
   });
+
+  const minArea = .003;
+  const noiseThreshold = .05;
+  const mcResolution = 60;
+  const mcPolyCount = 20000
 
   const options = {
     baseOptions: {
@@ -254,26 +260,6 @@ function App() {
       videoElementRef.current.src = '';
       videoElementRef.current.load();
     }
-    // Create a new video element
-    const videoElement = document.createElement('video');
-    videoElement.autoplay = true;
-    videoElement.playsInline = true;
-    videoElement.src = testVid;
-    videoElement.loop = true;
-    videoElement.onloadedmetadata = () => {
-      canvasRef.current.width = videoElement.videoWidth;
-      canvasRef.current.height = videoElement.videoHeight;
-      setWidth(videoElement.videoWidth);
-      setHeight(videoElement.videoHeight);
-
-      videoElement.requestVideoFrameCallback((now, metadata) => {
-        handleFrameRef.current(now, metadata);
-      });
-
-      // Initialize audio processing for video
-      setAudioSource(videoElement);
-    };
-    videoElementRef.current = videoElement;
   };
 
   useEffect(() => {
@@ -288,7 +274,7 @@ function App() {
   }, [])
 
   return (
-    <div className="app"    >
+    <div className="app">
 
       <div className='container'
         style={{
@@ -306,6 +292,7 @@ function App() {
           />
         )}
         <canvas
+          className={`bones ${bones ? '' : 'hidden'}`}
           ref={canvasRef}
         />
         <Scene
@@ -325,21 +312,14 @@ function App() {
       {handLandmarker && (
         <div className="controls">
           <button
+            className={`controls-webcam ${webcamRunning ? 'hidden' : ''}`}
             type="button"
             onClick={toggleCamera}
           >
-            {webcamRunning ? 'Stop Webcam' : 'Start Webcam'}
+            Start Webcam
           </button>
-          <button
-            type="button"
-            onClick={loadVideo}
-          >
-            Start Video
-          </button>
-          <div
-            className="volume"
-          >
-            Current Volume: {(currentVolume * 100).toFixed(2)}%
+          <div className={`volume ${webcamRunning ? '' : 'hidden'}`}>
+            <div className="volume-amount" style={{ width: `${currentVolume * 100}%` }}></div>
           </div>
         </div>
       )}
