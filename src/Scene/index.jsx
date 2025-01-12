@@ -6,7 +6,6 @@ import { Perf } from 'r3f-perf';
 import Environment from './Environment';
 import Bubbles from './Bubbles';
 import Blobs from './Blobs';
-import './index.scss';
 
 export default function Scene({ loops, width, height, noiseThreshold, currentVolume, videoElement, mcResolution, mcPolyCount, balls, blobs }) {
   const [bubbles, setBubbles] = useState([]);
@@ -16,11 +15,11 @@ export default function Scene({ loops, width, height, noiseThreshold, currentVol
       className="scene"
       style={{ width, height }}
       gl={{ alpha: true, stencil: false, depth: true, antialias: false }}
-      dpr={1}
+      dpr={0.75}
     // shadows
     // onCreated={(state) => (state.gl.toneMappingExposure = 2)}
     >
-      <Perf position="bottom-left" />
+      {/* <Perf position="bottom-left" /> */}
       <Environment videoElement={videoElement} />
       <PerspectiveCamera
         makeDefault

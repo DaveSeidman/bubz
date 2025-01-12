@@ -18,6 +18,7 @@ function App() {
   const [videoMode, setVideoMode] = useState('webcam');
   const [width, setWidth] = useState(0);
   const [height, setHeight] = useState(0);
+  const [windowHeight, setWindowHeight] = useState(innerHeight)
   const [audioSource, setAudioSource] = useState(null); // New state for audio source
 
   // Use the custom hook to get the current volume
@@ -275,39 +276,25 @@ function App() {
     videoElementRef.current = videoElement;
   };
 
+  useEffect(() => {
+    const resize = () => {
+      setWindowHeight(innerHeight)
+    }
+    addEventListener('resize', resize);
+
+    return (() => {
+      removeEventListener('resize', resize);
+    })
+  }, [])
+
   return (
-    <div>
-      {handLandmarker && (
-        <div>
-          <button
-            type="button"
-            style={{ position: 'absolute', zIndex: 10 }}
-            onClick={toggleCamera}
-          >
-            {webcamRunning ? 'Stop Webcam' : 'Start Webcam'}
-          </button>
-          <button
-            type="button"
-            style={{ position: 'absolute', zIndex: 10, left: '120px' }}
-            onClick={loadVideo}
-          >
-            Start Video
-          </button>
-          {/* Optionally display current volume level */}
-          <div
-            style={{
-              position: 'absolute',
-              zIndex: 10,
-              left: '240px',
-              top: '10px',
-            }}
-          >
-            Current Volume: {(currentVolume * 100).toFixed(2)}%
-          </div>
-        </div>
-      )}
-      {/* Render the video element */}
-      <div style={{ position: 'relative' }}>
+    <div className="app"    >
+
+      <div className='container'
+        style={{
+          transform: `translateX(${(window.innerWidth - (640 * (windowHeight / 480))) / 2}px) scale(${windowHeight / 480})`
+        }}
+      >
         {videoElementRef.current && (
           <div
             ref={(node) => {
@@ -320,7 +307,6 @@ function App() {
         )}
         <canvas
           ref={canvasRef}
-          style={{ position: 'absolute', top: 0, left: 0 }}
         />
         <Scene
           loops={loops}
@@ -335,7 +321,29 @@ function App() {
           mcPolyCount={mcPolyCount}
         />
       </div>
-    </div>
+
+      {handLandmarker && (
+        <div className="controls">
+          <button
+            type="button"
+            onClick={toggleCamera}
+          >
+            {webcamRunning ? 'Stop Webcam' : 'Start Webcam'}
+          </button>
+          <button
+            type="button"
+            onClick={loadVideo}
+          >
+            Start Video
+          </button>
+          <div
+            className="volume"
+          >
+            Current Volume: {(currentVolume * 100).toFixed(2)}%
+          </div>
+        </div>
+      )}
+    </div >
   );
 }
 
