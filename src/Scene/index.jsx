@@ -7,7 +7,7 @@ import Environment from './Environment';
 import Bubbles from './Bubbles';
 import Blobs from './Blobs';
 
-export default function Scene({ loops, width, height, noiseThreshold, currentVolume, videoElement, mcResolution, mcPolyCount, balls, blobs }) {
+export default function Scene({ stats, loops, width, height, noiseThreshold, currentVolume, videoElement, mcResolution, mcPolyCount, balls, blobs }) {
   const [bubbles, setBubbles] = useState([]);
 
   return (
@@ -19,7 +19,7 @@ export default function Scene({ loops, width, height, noiseThreshold, currentVol
     // shadows
     // onCreated={(state) => (state.gl.toneMappingExposure = 2)}
     >
-      {/* <Perf position="bottom-left" /> */}
+      <Perf position="bottom-left" className={`stats ${stats ? '' : 'hidden'}`} />
       <Environment videoElement={videoElement} />
       <PerspectiveCamera
         makeDefault

@@ -4,27 +4,22 @@ import { HandLandmarker, FilesetResolver } from '@mediapipe/tasks-vision';
 import { useControls } from 'leva';
 import { distance, findLoops, getColors } from './utils';
 import Scene from './Scene';
-// import testVid from './assets/test-vid.mp4';
-import useAudioMonitor from './AudioMonitor'; // Import the custom hook
+import useAudioMonitor from './AudioMonitor';
 
 function App() {
   const basePath = import.meta.env.BASE_URL || '/';
 
-  // State variables
   const [handLandmarker, setHandLandmarker] = useState(null);
   const [webcamRunning, setWebcamRunning] = useState(false);
   const [hands, setHands] = useState([]);
   const [loops, setLoops] = useState([]);
-  const [videoMode, setVideoMode] = useState('webcam');
   const [width, setWidth] = useState(0);
   const [height, setHeight] = useState(0);
   const [windowHeight, setWindowHeight] = useState(innerHeight)
   const [audioSource, setAudioSource] = useState(null); // New state for audio source
 
-  // Use the custom hook to get the current volume
   const currentVolume = useAudioMonitor(audioSource);
 
-  // Refs
   const canvasRef = useRef(null);
   const ctx = useRef(null);
   const stream = useRef();
@@ -32,7 +27,6 @@ function App() {
   const lastTimestamp = useRef(0);
   const videoElementRef = useRef(null);
 
-  // Constants
   const touchingThreshold = 0.1; // TODO: base this on the size of the hand
   const loopIdCounter = useRef(1);
   const confirmationThreshold = 3; // Number of consecutive frames before assigning an ID
@@ -40,20 +34,11 @@ function App() {
   const colorAmount = 6;
   const colors = getColors(colorAmount);
 
-  // Controls
   const {
-    // minArea,
-    // noiseThreshold,
-    // mcResolution,
-    // mcPolyCount,
     bones,
     balls,
     blobs
   } = useControls({
-    // minArea: { value: 0.003, min: 0, max: 0.05 },
-    // noiseThreshold: { value: 0.05, min: 0, max: 1 },
-    // mcResolution: { label: 'Blob Resolution', value: 60, min: 10, max: 120 },
-    // mcPolyCount: { label: 'Blob PolyCount', value: 20000, min: 1000, max: 100000 },
     bones: { value: true },
     balls: { value: true },
     blobs: { value: true },
@@ -81,7 +66,6 @@ function App() {
       );
       const handLandmarkerInstance = await HandLandmarker.createFromOptions(vision, options);
       setHandLandmarker(handLandmarkerInstance);
-      loadVideo();
     };
 
     if (canvasRef.current) {
@@ -200,66 +184,22 @@ function App() {
 
   // Toggle Camera
   const toggleCamera = async () => {
-    if (webcamRunning) {
-      // Stop webcam
-      stream.current.getTracks().forEach((track) => {
-        track.stop();
-      });
-      videoElementRef.current.srcObject = null;
-      videoElementRef.current.pause();
-      setWebcamRunning(false);
+    // Start webcam with microphone access
+    const constraints = { video: true, audio: true }; // Include audio
+    stream.current = await navigator.mediaDevices.getUserMedia(constraints);
+    const videoTrack = stream.current.getVideoTracks()[0];
+    const { width, height } = videoTrack.getSettings();
+    canvasRef.current.width = width;
+    canvasRef.current.height = height;
+    setWidth(width);
+    setHeight(height);
+    videoElementRef.current.srcObject = stream.current;
+    videoElementRef.current.requestVideoFrameCallback((now, metadata) => {
+      handleFrameRef.current(now, metadata);
+    });
 
-      // Clean up audio
-      setAudioSource(null);
-    } else {
-      // Stop video if playing
-      if (videoMode === 'video' && videoElementRef.current) {
-        videoElementRef.current.pause();
-        videoElementRef.current.src = '';
-        videoElementRef.current.load();
-      }
-      // Start webcam with microphone access
-      const constraints = { video: true, audio: true }; // Include audio
-      stream.current = await navigator.mediaDevices.getUserMedia(constraints);
-      const videoTrack = stream.current.getVideoTracks()[0];
-      canvasRef.current.width = videoTrack.getSettings().width;
-      canvasRef.current.height = videoTrack.getSettings().height;
-      setWidth(videoTrack.getSettings().width);
-      setHeight(videoTrack.getSettings().height);
-
-      // Create a new video element
-      const videoElement = document.createElement('video');
-      videoElement.autoplay = true;
-      videoElement.playsInline = true;
-      videoElement.muted = true; // Mute if necessary
-      videoElement.srcObject = stream.current;
-      videoElementRef.current = videoElement;
-
-      videoElement.requestVideoFrameCallback((now, metadata) => {
-        handleFrameRef.current(now, metadata);
-      });
-
-      // Initialize audio processing for microphone
-      setAudioSource(stream.current);
-
-      setWebcamRunning(true);
-      setVideoMode('webcam');
-    }
-  };
-
-  // Load Video
-  const loadVideo = () => {
-    // Stop webcam if running
-    if (webcamRunning) {
-      toggleCamera();
-    }
-    setVideoMode('video');
-    // Clean up existing video element
-    if (videoElementRef.current) {
-      videoElementRef.current.pause();
-      videoElementRef.current.src = '';
-      videoElementRef.current.load();
-    }
+    setAudioSource(stream.current);
+    setWebcamRunning(true);
   };
 
   useEffect(() => {
@@ -278,22 +218,19 @@ function App() {
 
       <div className='container'
         style={{
-          transform: `translateX(${(window.innerWidth - (640 * (windowHeight / 480))) / 2}px) scale(${windowHeight / 480})`
+          transform: `translate(-50%, -50%) scale(${innerHeight / height})`
         }}
       >
-        {videoElementRef.current && (
-          <div
-            ref={(node) => {
-              if (node) {
-                node.innerHTML = '';
-                node.appendChild(videoElementRef.current);
-              }
-            }}
-          />
-        )}
+        <video
+          ref={videoElementRef}
+          className="webcam"
+          autoPlay
+          muted
+        ></video>
         <canvas
           className={`bones ${bones ? '' : 'hidden'}`}
           ref={canvasRef}
+          style={{ width, height }}
         />
         <Scene
           loops={loops}
@@ -308,7 +245,6 @@ function App() {
           mcPolyCount={mcPolyCount}
         />
       </div>
-
       {handLandmarker && (
         <div className="controls">
           <button

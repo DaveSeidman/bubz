@@ -4,9 +4,10 @@ import { useVideoTexture } from '@react-three/drei';
 import { PMREMGenerator } from 'three';
 
 export default function Environment({ videoElement }) {
+  // console.log(videoElement);
   const { gl, scene } = useThree();
   const pmremGenerator = new PMREMGenerator(gl);
-  const videoTexture = useVideoTexture(videoElement.src || videoElement.srcObject, {
+  const videoTexture = useVideoTexture(videoElement.srcObject, {
     width: 640,
     height: 480,
   });
