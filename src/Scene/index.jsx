@@ -10,12 +10,14 @@ import Blobs from './Blobs';
 export default function Scene({ stats, loops, width, height, noiseThreshold, currentVolume, videoElement, mcResolution, mcPolyCount, balls, blobs }) {
   const [bubbles, setBubbles] = useState([]);
 
+  // console.log({ width, height });
+
   return (
     <Canvas
       className="scene"
       style={{ width, height }}
       gl={{ alpha: true, stencil: false, depth: true, antialias: false }}
-      dpr={0.75}
+      dpr={0.5}
     // shadows
     // onCreated={(state) => (state.gl.toneMappingExposure = 2)}
     >

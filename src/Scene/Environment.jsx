@@ -4,7 +4,6 @@ import { useVideoTexture } from '@react-three/drei';
 import { PMREMGenerator } from 'three';
 
 export default function Environment({ videoElement }) {
-  // console.log(videoElement);
   const { gl, scene } = useThree();
   const pmremGenerator = new PMREMGenerator(gl);
   const videoTexture = useVideoTexture(videoElement.srcObject, {
@@ -19,18 +18,15 @@ export default function Environment({ videoElement }) {
     scene.environment = preTexture.texture;
 
     const handleTimeUpdate = () => {
-      // preTexture.texture.dispose();
       preTexture.dispose();
       preTexture = pmremGenerator.fromEquirectangular(videoTexture);
       scene.environment = preTexture.texture;
     };
 
-    // videoElement.addEventListener('timeupdate', handleTimeUpdate);
-    const interval = setInterval(handleTimeUpdate, 30);
+    const interval = setInterval(handleTimeUpdate, 60);
 
     return () => {
       clearInterval(interval);
-      // videoElement.removeEventListener('timeupdate', handleTimeUpdate);
       preTexture.texture.dispose();
       pmremGenerator.dispose();
       videoTexture.dispose();
