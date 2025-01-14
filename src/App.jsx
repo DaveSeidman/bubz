@@ -49,8 +49,8 @@ function App() {
           setHandLandmarker={setHandLandmarker}
           setWebcamRunning={setWebcamRunning}
           setAudioSource={setAudioSource}
-          width={width}
-          height={height}
+          // width={width}
+          // height={height}
           setWidth={setWidth}
           setHeight={setHeight}
           loops={loops}
@@ -94,13 +94,14 @@ function App() {
             }}
 
           >
-            <div
-              className="volume-threshold"
-              style={{ width: `${noiseThreshold * 100}%` }}
-            />
+
             <div
               className="volume-amount"
               style={{ width: `${currentVolume * 100}%` }}
+            />
+            <div
+              className="volume-threshold"
+              style={{ width: `${noiseThreshold * 100}%` }}
             />
           </div>
         </div>

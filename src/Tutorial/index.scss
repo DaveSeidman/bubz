@@ -1,8 +1,11 @@
 .tutorial {
-position: absolute;
-inset: 0;
+  position: absolute;
+  inset: 0;
 
   .step {
+    position: absolute;
+    inset: 0;
+    visibility: hidden;
 
   }
 }

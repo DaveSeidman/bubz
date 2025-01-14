@@ -3,7 +3,7 @@ import { HandLandmarker, FilesetResolver } from '@mediapipe/tasks-vision';
 import { distance, findLoops, getColors } from '../utils';
 import './index.scss';
 
-export default function Bones({ width, height, setAudioSource, webcamRunning, setWidth, setHeight, bones, setLoops, handLandmarker, loops, setWebcamRunning, setHandLandmarker, videoElementRef }) {
+export default function Bones({ setAudioSource, webcamRunning, setWidth, setHeight, bones, setLoops, handLandmarker, loops, setWebcamRunning, setHandLandmarker, videoElementRef }) {
   const basePath = import.meta.env.BASE_URL || '/';
 
 
@@ -51,7 +51,7 @@ export default function Bones({ width, height, setAudioSource, webcamRunning, se
   useEffect(() => {
     if (!ctx.current || !canvasRef.current) return;
 
-    ctx.current.clearRect(0, 0, width, height);
+    ctx.current.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
 
     const nextLoops = findLoops({ hands, touchingThreshold, minArea });
 
@@ -112,6 +112,7 @@ export default function Bones({ width, height, setAudioSource, webcamRunning, se
   useEffect(() => {
     if (!ctx.current) return;
 
+    const { width, height } = canvasRef.current;
     ctx.current.lineWidth = 2;
     ctx.current.font = '16px Courier';
     ctx.current.textAlign = 'center';
@@ -134,7 +135,7 @@ export default function Bones({ width, height, setAudioSource, webcamRunning, se
         ctx.current.restore();
       }
     });
-  }, [loops, width, height]);
+  }, [loops]);
 
   const handleFrame = async (now) => {
     let timestamp = now * 1000;
@@ -153,7 +154,6 @@ export default function Bones({ width, height, setAudioSource, webcamRunning, se
 
   handleFrameRef.current = handleFrame;
 
-  // Toggle Camera
   const startCamera = async () => {
     // Start webcam with microphone access
     const constraints = { video: true, audio: true }; // Include audio
@@ -184,7 +184,7 @@ export default function Bones({ width, height, setAudioSource, webcamRunning, se
       <canvas
         className={`bones-bones ${bones ? '' : 'hidden'}`}
         ref={canvasRef}
-        style={{ width, height }}
+      // style={{ width, height }}
       />
       <button
         className={`controls-webcam ${webcamRunning ? 'hidden' : ''}`}
