@@ -3,16 +3,15 @@ import { HandLandmarker, FilesetResolver } from '@mediapipe/tasks-vision';
 import { distance, findLoops, getColors } from '../utils';
 import './index.scss';
 
-export default function Bones({ setAudioSource, webcamRunning, setWidth, setHeight, bones, setLoops, handLandmarker, loops, setWebcamRunning, setHandLandmarker, videoElementRef }) {
+export default function Bones({ handleFrameRef, bones, setLoops, handLandmarker, loops, setHandLandmarker, videoElementRef, width, height }) {
   const basePath = import.meta.env.BASE_URL || '/';
-
 
   const [hands, setHands] = useState([]);
   const minArea = 0.003;
   const canvasRef = useRef(null);
   const ctx = useRef(null);
-  const stream = useRef();
-  const handleFrameRef = useRef();
+  // const stream = useRef();
+  // const handleFrameRef = useRef();
   const lastTimestamp = useRef(0);
   const touchingThreshold = 0.1; // TODO: base this on the size of the hand
   const loopIdCounter = useRef(1);
@@ -51,7 +50,7 @@ export default function Bones({ setAudioSource, webcamRunning, setWidth, setHeig
   useEffect(() => {
     if (!ctx.current || !canvasRef.current) return;
 
-    ctx.current.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
+    ctx.current.clearRect(0, 0, width, height);
 
     const nextLoops = findLoops({ hands, touchingThreshold, minArea });
 
@@ -154,45 +153,29 @@ export default function Bones({ setAudioSource, webcamRunning, setWidth, setHeig
 
   handleFrameRef.current = handleFrame;
 
-  const startCamera = async () => {
-    // Start webcam with microphone access
-    const constraints = { video: true, audio: true }; // Include audio
-    stream.current = await navigator.mediaDevices.getUserMedia(constraints);
-    const videoTrack = stream.current.getVideoTracks()[0];
-    const { width, height } = videoTrack.getSettings();
-    canvasRef.current.width = width;
-    canvasRef.current.height = height;
-    setWidth(width);
-    setHeight(height);
-    videoElementRef.current.srcObject = stream.current;
+  useEffect(() => {
+    // console.log(videoElementRef)
     videoElementRef.current.requestVideoFrameCallback((now, metadata) => {
+      // console.log(handleFrameRef);
       handleFrameRef.current(now, metadata);
     });
+  }, [videoElementRef])
 
-    setAudioSource(stream.current);
-    setWebcamRunning(true);
-  };
+
+  useEffect(() => {
+    console.log(width, height)
+    canvasRef.current.width = width;
+    canvasRef.current.height = height;
+  }, [width, height])
+
+
 
   return (
     <div className="bones">
-      <video
-        ref={videoElementRef}
-        className="webcam"
-        autoPlay
-        muted
-      />
       <canvas
         className={`bones-bones ${bones ? '' : 'hidden'}`}
         ref={canvasRef}
-      // style={{ width, height }}
       />
-      <button
-        className={`controls-webcam ${webcamRunning ? 'hidden' : ''}`}
-        type="button"
-        onClick={startCamera}
-      >
-        Start Webcam
-      </button>
     </div>
   );
 }

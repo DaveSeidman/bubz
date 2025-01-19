@@ -1,7 +1,7 @@
 # Blow a Bubble
 _Interactive Hand tracking app._  
 
-Live Demo: https://daveseidman.github.io/blow-a-bubble/  
+Live Demo: https://daveseidman.github.io/bubz/  
 
 Using MediaPipe's hand pose detection, we find "loops" created by users fingers. We then display a flattened bubble inside those loops and wait for user to "blow" the bubble by actually blowing (monitor microphone for input volume level). 
 

@@ -2,14 +2,17 @@
 import React, { useRef, useState } from 'react';
 import { useControls } from 'leva';
 import Scene from './Scene';
+import Webcam from './Webcam';
 import Bones from './Bones';
 import useAudioMonitor from './AudioMonitor';
 import Tutorial from './Tutorial';
 
 function App() {
+  const [step, setStep] = useState(0);
+
   const [handLandmarker, setHandLandmarker] = useState(null);
   const [webcamRunning, setWebcamRunning] = useState(false);
-  // const [hands, setHands] = useState([]);
+  const handleFrameRef = useRef();
   const [loops, setLoops] = useState([]);
   const [width, setWidth] = useState(0);
   const [height, setHeight] = useState(0);
@@ -27,12 +30,9 @@ function App() {
     blobs: { value: true },
   });
 
-  // const noiseThreshold = .05;
   const [noiseThreshold, setNoiseThreshold] = useState(0.05);
   const mcResolution = 60;
   const mcPolyCount = 20000;
-
-  const pointer = useRef({ down: false, left: 0 });
 
   return (
     <div className="app">
@@ -43,16 +43,24 @@ function App() {
           transform: `translate(-50%, -50%) scale(${innerHeight / height})`,
         }}
       >
+        <Webcam
+          setWidth={setWidth}
+          setHeight={setHeight}
+          webcamRunning={webcamRunning}
+          setWebcamRunning={setWebcamRunning}
+          setAudioSource={setAudioSource}
+          videoElementRef={videoElementRef}
+          handleframeRef={handleFrameRef}
+        />
         <Bones
+          handleFrameRef={handleFrameRef}
           bones={bones}
           handLandmarker={handLandmarker}
           setHandLandmarker={setHandLandmarker}
           setWebcamRunning={setWebcamRunning}
           setAudioSource={setAudioSource}
-          // width={width}
-          // height={height}
-          setWidth={setWidth}
-          setHeight={setHeight}
+          width={width}
+          height={height}
           loops={loops}
           setLoops={setLoops}
           webcamRunning={webcamRunning}
@@ -70,18 +78,13 @@ function App() {
           mcResolution={mcResolution}
           mcPolyCount={mcPolyCount}
         />
-
-        <Tutorial />
+        <Tutorial
+          step={step}
+          setStep={setStep}
+        />
       </div>
       {handLandmarker && (
         <div className="controls">
-          {/* <button
-            className={`controls-webcam ${webcamRunning ? 'hidden' : ''}`}
-            type="button"
-            onClick={startCamera}
-          >
-            Start Webcam
-          </button> */}
           <div
             className={`volume ${webcamRunning ? '' : 'hidden'}`}
             onPointerDown={(e) => {
@@ -92,9 +95,7 @@ function App() {
             onPointerMove={(e) => {
               // console.log('pointermove', e.clientX);
             }}
-
           >
-
             <div
               className="volume-amount"
               style={{ width: `${currentVolume * 100}%` }}
