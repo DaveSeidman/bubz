@@ -1,7 +1,6 @@
-import React, { useEffect, useState } from 'react';
-import { MarchingCubes, MarchingCube, MarchingPlane, MeshTransmissionMaterial } from '@react-three/drei';
+import React from 'react';
+import { MarchingCubes, MarchingCube, MeshTransmissionMaterial } from '@react-three/drei';
 import { extend } from '@react-three/fiber';
-import { MeshBasicMaterial } from 'three';
 
 extend({ MeshTransmissionMaterial });
 
@@ -10,6 +9,7 @@ export default function Blobs({ bubbles, mcResolution, mcPolyCount }) {
     <MarchingCubes
       resolution={mcResolution}
       maxPolyCount={mcPolyCount}
+    // TODO: re-enable uvs give each bubble a random color
     // enableUvs
     // enableColors
     // visible={false}
@@ -46,16 +46,6 @@ export default function Blobs({ bubbles, mcResolution, mcPolyCount }) {
         color={0xeeeeee}
         metalness={0.25}
       />
-      {/* <meshPhysicalMaterial
-        // envMapIntensity={0} // Adjust the intensity of the environment reflection
-        metalness={0.2} // Increase metalness for better reflections
-        roughness={0.1} // Reduce roughness for sharper reflections
-        transmission={0.99}
-        reflectivity={0.9}
-        // thickness={2}
-        color={0xbbbbbb}
-      /> */}
-      {/* <meshNormalMaterial /> */}
     </MarchingCubes>
   );
 }

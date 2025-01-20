@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { Canvas } from '@react-three/fiber';
-import { PerspectiveCamera, OrbitControls } from '@react-three/drei';
+import { PerspectiveCamera } from '@react-three/drei';
 import { Bloom, EffectComposer, SSAO } from '@react-three/postprocessing';
 import { Perf } from 'r3f-perf';
 import Environment from './Environment';

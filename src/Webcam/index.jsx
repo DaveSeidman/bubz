@@ -11,13 +11,12 @@ export default function Webcam({ setWidth, setHeight, setAudioSource, webcamRunn
     setWidth(width);
     setHeight(height);
     videoElementRef.current.srcObject = stream.current;
-
     setAudioSource(stream.current);
     setWebcamRunning(true);
   };
 
   return (
-    <>
+    <div className="webcam">
       <video
         ref={videoElementRef}
         className="webcam"
@@ -31,6 +30,6 @@ export default function Webcam({ setWidth, setHeight, setAudioSource, webcamRunn
       >
         Start Webcam
       </button>
-    </>
+    </div>
   );
 }

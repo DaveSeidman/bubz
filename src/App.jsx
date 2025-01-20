@@ -78,11 +78,14 @@ function App() {
           mcResolution={mcResolution}
           mcPolyCount={mcPolyCount}
         />
-        <Tutorial
-          step={step}
-          setStep={setStep}
-        />
+
       </div>
+      <Tutorial
+        step={step}
+        setStep={setStep}
+        webcamRunning={webcamRunning}
+        loops={loops}
+      />
       {handLandmarker && (
         <div className="controls">
           <div

@@ -26,9 +26,20 @@ const Bubble = forwardRef(({ bubble, texture, balls }, ref) => (
       );
     }}
   >
-    <mesh castShadow receiveShadow scale={[bubble.scale, bubble.scale, bubble.scale]}>
+    <mesh
+      castShadow
+      receiveShadow
+      scale={[bubble.scale, bubble.scale, bubble.scale]}
+    >
       <sphereGeometry args={[1, 32, 16]} />
-      <meshStandardMaterial map={texture} visible={balls} envMapIntensity={1} metalness={0.1} roughness={0.1} color={0xbbbbbb} />
+      <meshStandardMaterial
+        map={texture}
+        visible={balls}
+        envMapIntensity={1}
+        metalness={0.1}
+        roughness={0.1}
+        color={0xbbbbbb}
+      />
     </mesh>
   </RigidBody>
 ));
