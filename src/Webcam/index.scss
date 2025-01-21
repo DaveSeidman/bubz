@@ -2,6 +2,10 @@
   position: absolute;
   inset: 0;
 
+  &-video {
+    transition: visibility 1s 1s, opacity 1s 1s;
+  }
+
   &-start {
     text-transform: uppercase;
     white-space: nowrap;
@@ -14,7 +18,7 @@
     color: white;
     padding: .5rem 2rem;
     border-radius: 3rem;
-    transition: color .25s, background .25s, visibility .5s, opacity .5s;
+    transition: color .5s ease-out, background .5s ease-out, visibility .5s ease-out, opacity .5s ease-out;
     cursor: pointer;
     letter-spacing: .1rem;
     

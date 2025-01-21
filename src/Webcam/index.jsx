@@ -20,7 +20,7 @@ export default function Webcam({ setWidth, setHeight, setAudioSource, webcamRunn
     <div className="webcam">
       <video
         ref={videoElementRef}
-        className="webcam-video"
+        className={`webcam-video ${webcamRunning ? '' : 'hidden'}`}
         autoPlay
         muted
       />

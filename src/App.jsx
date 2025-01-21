@@ -1,6 +1,6 @@
 // App.js
 import React, { useRef, useState } from 'react';
-import { useControls } from 'leva';
+import { Leva, useControls } from 'leva';
 import Scene from './Scene';
 import Webcam from './Webcam';
 import Bones from './Bones';
@@ -14,6 +14,8 @@ function App() {
   const [webcamRunning, setWebcamRunning] = useState(false);
   const handleFrameRef = useRef();
   const [loops, setLoops] = useState([]);
+  const [bubbles, setBubbles] = useState([]);
+
   const [width, setWidth] = useState(0);
   const [height, setHeight] = useState(0);
   const [audioSource, setAudioSource] = useState(null); // New state for audio source
@@ -26,11 +28,11 @@ function App() {
     blobs,
   } = useControls({
     bones: { value: true },
-    balls: { value: true },
+    balls: { value: false },
     blobs: { value: true },
   });
 
-  const [noiseThreshold, setNoiseThreshold] = useState(0.05);
+  const [noiseThreshold, setNoiseThreshold] = useState(0.5);
   const mcResolution = 60;
   const mcPolyCount = 20000;
 
@@ -40,7 +42,7 @@ function App() {
       <div
         className="container"
         style={{
-          transform: `translate(-50%, -50%) scale(${innerHeight / height})`,
+          transform: `translate(-50%, -50%) scale(${(innerHeight - 150) / height})`, // TODO: use (innerHeight - 0) on mobile to save space
         }}
       >
         <Webcam
@@ -72,6 +74,8 @@ function App() {
           height={height}
           balls={balls}
           blobs={blobs}
+          bubbles={bubbles}
+          setBubbles={setBubbles}
           currentVolume={currentVolume}
           noiseThreshold={noiseThreshold}
           videoElement={videoElementRef.current}
@@ -80,13 +84,26 @@ function App() {
         />
 
       </div>
+      <div className="ui">
+        <h1 className="ui-header">bubz!</h1>
+        <div className="ui-footer">
+          <span>Another</span>
+          <a target="github" href="https://github.com/DaveSeidman/bubz">Digital</a>
+          <a target="github" href="https://github.com/DaveSeidman/bubz">Stunt</a>
+          <span>by</span>
+          <a target="daveseidman" href="https://daveseidman.com">Dave</a>
+          <a target="daveseidman" href="https://daveseidman.com">Seidman</a>
+          <span>.</span>
+        </div>
+      </div>
       <Tutorial
         step={step}
         setStep={setStep}
         webcamRunning={webcamRunning}
         loops={loops}
-      // bubbles={bubbles}
+        bubbles={bubbles}
       />
+      <Leva collapsed />
       {handLandmarker && (
         <div className="controls">
           <div
@@ -106,8 +123,10 @@ function App() {
             />
             <div
               className="volume-threshold"
-              style={{ width: `${noiseThreshold * 100}%` }}
-            />
+              style={{ left: `${noiseThreshold * 100}%` }}
+            >
+              Min
+            </div>
           </div>
         </div>
       )}

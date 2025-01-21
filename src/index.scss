@@ -23,7 +23,7 @@ html, body, #root {
       canvas, video {
         position: absolute;
         transform: scaleX(-100%);
-        transition: opacity .5s, visibility .5s;
+      //   transition: opacity .5s, visibility .5s;
       }
     }
 
@@ -44,34 +44,101 @@ html, body, #root {
       }
 
       .volume {
+        z-index: 1;
+        background: linear-gradient(to bottom,
+         rgba(255, 255, 255, .2) 0%, 
+         rgba(255, 255, 255, .4) 15%,
+         rgba(255, 255, 255, .5) 20%,
+         rgba(255, 255, 255, .4) 25%,
+         rgba(255, 255, 255, .2) 70%,
+         rgba(255, 255, 255, .0) 100%
+         );
+
         position: absolute;
-        top: 20px;
+        bottom: 20px;
         left: 50%;
-        transform: translateX(-50%);
-        width: 200px;
+        transform: translateX(-50%) scaleX(.5);
+        width: 600px;
         border: 2px solid white;
-        height: 10px;
-        border-radius: 10px;
+        height: 30px;
+        border-radius: 30px;
         transition: visibility 1s, opacity 1s;
 
-        &-threshold {
-          height: 100%;
-          background: rgba(255, 255, 255, .5);
-          border-radius: 6px;
+        &:after {
           position: absolute;
-          left: 0;
+          content: '';
+          width: 30px;
+          height: 30px;
+          border-radius: 50%;
+          background: rgba(0, 0, 0, .5);
           top: 0;
-          backdrop-filter: blur(10px);
+          right: 0;
+        }
+
+        &-threshold {
+          position: absolute;
+          height: 100%;
+          // width: 30px;
+          width: 15px;
+          border-radius: 30px;
+          border-right: 10px solid rgba(0, 0, 0, .5);
+          border-left: 10px solid black;
+          top: 0;
+          line-height: 30px;
+          user-select: none;
         }
 
         &-amount {
-          position: absolute;
+          position: relative;
           top: 3px;
           left: 3px;
-          background: white;
+          background: rgba(240, 67, 9, 0.75);
           height: calc(100% - 6px);
-          border-radius: 3px;
+          border-radius: 30px;
+          &:after {
+            content: '';
+            position: absolute;
+            right: 0px;
+            background: rgba(240, 67, 9, 1);
+            height: 100%;
+            width: 30px;
+            border-radius: 50%;
+          }
 
+        }
+      }
+    }
+
+    .ui {  
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+
+      &-header {
+        text-align: center;
+        color: white;
+      }
+
+      &-footer {
+        pointer-events: all;
+        position: absolute;
+        bottom: 0;
+        color: white;
+        font-weight: 200;
+        font-size: 12px;
+        text-transform: uppercase;
+        line-height: 32px;
+        margin: 1rem;
+        letter-spacing: 1px;
+        span, a {
+          color: white;
+          margin-right: .2rem;
+        }
+
+        a {
+          text-underline-offset: 3px;
+          // text-decoration: none;
+          // border-bottom: 1px solid rgba(255, 255, 255, .5);
         }
       }
     }

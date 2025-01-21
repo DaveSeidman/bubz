@@ -12,14 +12,65 @@
     50% { opacity: 1 }
     100% { opacity: 0 }
   }
-
+  @keyframes wiggle {
+    0% { transform: translateX(0) }
+    10% { transform: translateX(.5rem) }
+    20% { transform: translateX(-.5rem) }
+    30% { transform: translateX(0rem) }
+  }
   &-step {
-    color: white;
     position: absolute;
-    left: 50%;
-    top: 50%;
-    transform: translate(-50%, -50%);
-    margin-top: 3rem;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    // margin-top: 6rem;
+
+    &.camera {
+      p {
+        margin-top: 6rem;
+      }
+    }
+
+    .threshold {
+      position: absolute;
+      bottom: 0;
+      // bottom: .25rem;
+      height: 50px;
+
+      p {
+        position: absolute;
+        top: 0;
+        left: 0;
+        white-space: nowrap;
+        transform: translate(-50%, -50%);
+
+      }
+      img {
+        position: absolute;
+        height: calc(100% - 25px);
+        top: -0px;
+        z-index: 2;
+      }
+    }
+
+    video {
+      width: 300px;
+    }
+  }
+
+  p {
+    color: white;
+    text-shadow: 0 2px 2px rgba(0, 0, 0, .75);
+    font-weight: 600;
+  }
+
+  .pulse {
     animation: pulse 3s infinite;
+  }
+
+  .wiggle {
+    animation: wiggle 2s infinite;
   }
 }

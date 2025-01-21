@@ -82,7 +82,7 @@ function useAudioMonitor(audioSource) {
     getVolume();
   };
 
-  return currentVolume;
+  return (currentVolume * 2) + 0.2;
 }
 
 export default useAudioMonitor;
