@@ -1,9 +1,18 @@
+@font-face {
+  font-family: 'Quicksand';
+  src: url('./assets/fonts/Quicksand-VariableFont_wght.ttf');
+}
+
 html, body, #root {
   position: absolute;
   inset: 0;
   background: #333;
   font-size: 16px;
   margin: 0;
+
+  * {
+    font-family: 'Quicksand';
+  }
 
   .app {
     .container {
@@ -32,26 +41,6 @@ html, body, #root {
 
       & * {
         pointer-events: all;
-      }
-
-      &-webcam {
-        white-space: nowrap;
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        border: 2px solid white;
-        background: none;
-        color: white;
-        padding: .5rem 2rem;
-        border-radius: 3rem;
-        transition: color .25s, background .25s, visibility .5s, opacity .5s;
-        cursor: pointer;
-
-        &:hover {
-          background: white;
-          color: #333;
-        }
       }
 
       .volume {

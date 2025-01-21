@@ -5,11 +5,11 @@ import { Physics } from '@react-three/rapier';
 
 import { RepeatWrapping } from 'three';
 import Bubble from './Bubble'; // Import your Bubble component
-import plusImage from '../assets/plus.png';
+import plusImage from '../assets/images/plus.png';
 import { randomPointInPolygon } from '../utils';
 
 function Bubbles({ bubbles, setBubbles, loops, noiseThreshold, currentVolume, balls }) {
-  const maxBubbleRate = 20;
+  // const maxBubbleRate = 20;
   const lastBubbleTime = useRef(new Date().getTime());
   const texture = useTexture(plusImage);
   texture.wrapS = RepeatWrapping;

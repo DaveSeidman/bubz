@@ -1,4 +1,5 @@
 import React, { useRef } from 'react';
+import './index.scss';
 
 export default function Webcam({ setWidth, setHeight, setAudioSource, webcamRunning, setWebcamRunning, videoElementRef }) {
   const stream = useRef();
@@ -19,12 +20,12 @@ export default function Webcam({ setWidth, setHeight, setAudioSource, webcamRunn
     <div className="webcam">
       <video
         ref={videoElementRef}
-        className="webcam"
+        className="webcam-video"
         autoPlay
         muted
       />
       <button
-        className={`controls-webcam ${webcamRunning ? 'hidden' : ''}`}
+        className={`webcam-start ${webcamRunning ? 'hidden' : ''}`}
         type="button"
         onClick={startCamera}
       >

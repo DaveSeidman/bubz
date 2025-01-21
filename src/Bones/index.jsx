@@ -1,6 +1,6 @@
 import React, { useRef, useEffect, useState } from 'react';
 import { HandLandmarker, FilesetResolver } from '@mediapipe/tasks-vision';
-import { distance, findLoops, getColors } from '../utils';
+import { distance, findLoops, getColors, jointConnections } from '../utils';
 import './index.scss';
 
 export default function Bones({ handleFrameRef, bones, setLoops, handLandmarker, loops, setHandLandmarker, videoElementRef, width, height }) {
@@ -51,6 +51,29 @@ export default function Bones({ handleFrameRef, bones, setLoops, handLandmarker,
     if (!ctx.current || !canvasRef.current) return;
 
     ctx.current.clearRect(0, 0, width, height);
+
+    // Draw joints and bones first
+    hands.forEach((landmarks) => {
+      ctx.current.strokeStyle = 'white';
+      ctx.current.lineWidth = 1;
+      jointConnections.forEach(([start, end]) => {
+        const startJoint = landmarks[start];
+        const endJoint = landmarks[end];
+        if (startJoint && endJoint) {
+          ctx.current.beginPath();
+          ctx.current.moveTo(startJoint.x * width, startJoint.y * height);
+          ctx.current.lineTo(endJoint.x * width, endJoint.y * height);
+          ctx.current.stroke();
+        }
+      });
+
+      landmarks.forEach((joint) => {
+        ctx.current.beginPath();
+        ctx.current.arc(joint.x * width, joint.y * height, 2.5, 0, Math.PI * 2);
+        ctx.current.fillStyle = 'white';
+        ctx.current.fill();
+      });
+    });
 
     const nextLoops = findLoops({ hands, touchingThreshold, minArea });
 
@@ -107,7 +130,7 @@ export default function Bones({ handleFrameRef, bones, setLoops, handLandmarker,
     });
   }, [hands]);
 
-  // Render Loops
+
   useEffect(() => {
     if (!ctx.current) return;
 
@@ -154,21 +177,16 @@ export default function Bones({ handleFrameRef, bones, setLoops, handLandmarker,
   handleFrameRef.current = handleFrame;
 
   useEffect(() => {
-    // console.log(videoElementRef)
     videoElementRef.current.requestVideoFrameCallback((now, metadata) => {
-      // console.log(handleFrameRef);
       handleFrameRef.current(now, metadata);
     });
   }, [videoElementRef])
 
 
   useEffect(() => {
-    console.log(width, height)
     canvasRef.current.width = width;
     canvasRef.current.height = height;
   }, [width, height])
-
-
 
   return (
     <div className="bones">

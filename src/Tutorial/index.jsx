@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import './index.scss';
 
-export default function Tutorial({ webcamRunning, loops }) {
+export default function Tutorial({ webcamRunning, loops, bubbles }) {
   const [firstLoop, setFirstLoop] = useState(false);
+  const [firstBubble, setFirstBubble] = useState(false);
 
   useEffect(() => {
     if (loops?.length >= 1) setFirstLoop(true);
@@ -11,21 +12,18 @@ export default function Tutorial({ webcamRunning, loops }) {
   return (
     <div className="tutorial">
       {!webcamRunning && (
-        <div className="step">
-          <p>Allow camera and microphone access</p>
-          <button type="button" onClick={() => { }}>Next</button>
+        <div className="tutorial-step">
+          <p>allow camera and microphone access</p>
         </div>
       )}
       {(webcamRunning && !firstLoop) && (
-        <div className="step">
+        <div className="tutorial-step">
           <p>Make loops with your fingers</p>
-          <button type="button" onClick={() => { }}>Next</button>
         </div>
       )}
-      {(webcamRunning && firstLoop) && (
-        <div className="step">
+      {(webcamRunning && firstLoop && !firstBubble) && (
+        <div className="tutorial-step">
           <p>Blow to start making bubbles!</p>
-          <button type="button" onClick={() => { }}>Next</button>
         </div>
       )}
     </div>

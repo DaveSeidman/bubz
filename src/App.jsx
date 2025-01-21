@@ -85,6 +85,7 @@ function App() {
         setStep={setStep}
         webcamRunning={webcamRunning}
         loops={loops}
+      // bubbles={bubbles}
       />
       {handLandmarker && (
         <div className="controls">
