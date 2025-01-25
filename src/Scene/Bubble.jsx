@@ -31,7 +31,7 @@ const Bubble = forwardRef(({ bubble, texture, balls }, ref) => (
       receiveShadow
       scale={[bubble.scale, bubble.scale, bubble.scale]}
     >
-      <sphereGeometry args={[1, 32, 16]} />
+      <sphereGeometry args={[1, 16, 8]} />
       <meshStandardMaterial
         map={texture}
         visible={balls}

@@ -4,7 +4,9 @@ import { Leva, useControls } from 'leva';
 import Scene from './Scene';
 import Webcam from './Webcam';
 import Bones from './Bones';
-import useAudioMonitor from './AudioMonitor';
+// import useAudioMonitor from './AudioMonitor';
+import AudioMonitor from './AudioMonitor';
+
 import Tutorial from './Tutorial';
 
 function App() {
@@ -18,9 +20,11 @@ function App() {
 
   const [width, setWidth] = useState(0);
   const [height, setHeight] = useState(0);
+  const [currentVolume, setCurrentVolume] = useState(0);
+
   const [audioSource, setAudioSource] = useState(null); // New state for audio source
 
-  const currentVolume = useAudioMonitor(audioSource);
+  // const currentVolume = useAudioMonitor(audioSource);
   const videoElementRef = useRef();
   const {
     bones,
@@ -33,7 +37,7 @@ function App() {
   });
 
   const [noiseThreshold, setNoiseThreshold] = useState(0.5);
-  const mcResolution = 60;
+  const mcResolution = 100;
   const mcPolyCount = 20000;
 
   return (
@@ -60,7 +64,7 @@ function App() {
           handLandmarker={handLandmarker}
           setHandLandmarker={setHandLandmarker}
           setWebcamRunning={setWebcamRunning}
-          setAudioSource={setAudioSource}
+          // setAudioSource={setAudioSource}
           width={width}
           height={height}
           loops={loops}
@@ -88,12 +92,9 @@ function App() {
         <h1 className="ui-header">bubz!</h1>
         <div className="ui-footer">
           <span>Another</span>
-          <a target="github" href="https://github.com/DaveSeidman/bubz">Digital</a>
-          <a target="github" href="https://github.com/DaveSeidman/bubz">Stunt</a>
+          <a target="github" href="https://github.com/DaveSeidman/bubz">Digital Stunt</a>
           <span>by</span>
-          <a target="daveseidman" href="https://daveseidman.com">Dave</a>
-          <a target="daveseidman" href="https://daveseidman.com">Seidman</a>
-          <span>.</span>
+          <a target="daveseidman" href="https://daveseidman.com">Dave Seidman</a>
         </div>
       </div>
       <Tutorial
@@ -103,8 +104,18 @@ function App() {
         loops={loops}
         bubbles={bubbles}
       />
+      <AudioMonitor
+        handLandmarker={handLandmarker}
+        webcamRunning={webcamRunning}
+        audioSource={audioSource}
+        currentVolume={currentVolume}
+        setCurrentVolume={setCurrentVolume}
+        noiseThreshold={noiseThreshold}
+        setNoiseThreshold={setNoiseThreshold}
+      />
       <Leva collapsed />
-      {handLandmarker && (
+
+      {/* {handLandmarker && (
         <div className="controls">
           <div
             className={`volume ${webcamRunning ? '' : 'hidden'}`}
@@ -129,7 +140,7 @@ function App() {
             </div>
           </div>
         </div>
-      )}
+      )} */}
     </div>
   );
 }

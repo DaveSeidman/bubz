@@ -1,88 +1,89 @@
-// useAudioMonitor.js
-import { useState, useRef, useEffect } from 'react';
+// AudioMonitor Component
+import React, { useRef, useEffect } from 'react';
+import './index.scss';
 
-function useAudioMonitor(audioSource) {
-  const [currentVolume, setCurrentVolume] = useState(0); // Measured volume level
+function AudioMonitor({
+  handLandmarker,
+  webcamRunning,
+  currentVolume,
+  setCurrentVolume,
+  noiseThreshold,
+  setNoiseThreshold,
+  audioSource,
+}) {
+  // const [internalVolume, setInternalVolume] = useState(0);
   const audioContextRef = useRef(null);
   const analyserRef = useRef(null);
   const animationFrameIdRef = useRef(null);
 
   useEffect(() => {
-    if (audioSource) {
-      // Initialize audio processing
-      initializeAudio(audioSource);
-    }
+    if (!audioSource) return;
 
-    // Clean up when unmounting or audioSource changes
-    return () => {
+    const initializeAudio = () => {
       if (audioContextRef.current) {
         audioContextRef.current.close();
-        audioContextRef.current = null;
       }
+
+      const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+      const analyser = audioContext.createAnalyser();
+      analyser.fftSize = 256;
+
+      const sourceNode = audioContext.createMediaStreamSource(audioSource);
+      sourceNode.connect(analyser);
+
+      audioContextRef.current = audioContext;
+      analyserRef.current = analyser;
+
+      const bufferLength = analyser.frequencyBinCount;
+      const dataArray = new Uint8Array(bufferLength);
+
+      const monitorVolume = () => {
+        analyser.getByteFrequencyData(dataArray);
+        const sum = dataArray.reduce((a, b) => a + b, 0);
+        const average = sum / bufferLength;
+        setCurrentVolume(average / 255);
+        animationFrameIdRef.current = requestAnimationFrame(monitorVolume);
+      };
+
+      monitorVolume();
+    };
+
+    initializeAudio();
+
+    return () => {
       if (animationFrameIdRef.current) {
         cancelAnimationFrame(animationFrameIdRef.current);
-        animationFrameIdRef.current = null;
+      }
+      if (audioContextRef.current) {
+        audioContextRef.current.close();
       }
     };
   }, [audioSource]);
 
-  const initializeAudio = (source) => {
-    // Close the previous audio context if it exists
-    if (audioContextRef.current) {
-      audioContextRef.current.close();
-    }
+  if (!handLandmarker) return null;
 
-    // Cancel the previous animation frame
-    if (animationFrameIdRef.current) {
-      cancelAnimationFrame(animationFrameIdRef.current);
-      animationFrameIdRef.current = null;
-    }
-
-    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-    audioContextRef.current = audioContext;
-
-    let sourceNode;
-    if (source instanceof MediaStream) {
-      sourceNode = audioContext.createMediaStreamSource(source);
-    } else if (source instanceof HTMLMediaElement) {
-      sourceNode = audioContext.createMediaElementSource(source);
-    } else {
-      console.error('Unsupported audio source');
-      return;
-    }
-
-    const analyser = audioContext.createAnalyser();
-    analyser.fftSize = 256;
-    analyserRef.current = analyser;
-
-    // Connect nodes: source -> analyser -> destination
-    sourceNode.connect(analyser);
-    analyser.connect(audioContext.destination);
-
-    // Start volume monitoring
-    monitorVolume();
-  };
-
-  const monitorVolume = () => {
-    const bufferLength = analyserRef.current.frequencyBinCount;
-    const dataArray = new Uint8Array(bufferLength);
-
-    const getVolume = () => {
-      analyserRef.current.getByteFrequencyData(dataArray);
-      let sum = 0;
-      for (let i = 0; i < bufferLength; i++) {
-        sum += dataArray[i];
-      }
-      const average = sum / bufferLength;
-      setCurrentVolume(average / 255); // Normalize between 0 and 1
-
-      // Store the animation frame ID
-      animationFrameIdRef.current = requestAnimationFrame(getVolume);
-    };
-    getVolume();
-  };
-
-  return (currentVolume * 2) + 0.2;
+  return (
+    <div className="audio">
+      <div
+        className={`audio-volume ${webcamRunning ? '' : 'hidden'}`}
+        onPointerDown={(e) => {
+          const { left, width } = e.currentTarget.getBoundingClientRect();
+          setNoiseThreshold((e.clientX - left) / width);
+        }}
+      >
+        <div
+          className="audio-volume-amount"
+          style={{ width: `${(currentVolume * 100)}%` }}
+        />
+        <div
+          className="audio-volume-threshold"
+          style={{ left: `${noiseThreshold * 100}%` }}
+        >
+          Min
+        </div>
+      </div>
+    </div>
+  );
 }
 
-export default useAudioMonitor;
+export default AudioMonitor;
