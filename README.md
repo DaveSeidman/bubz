@@ -1,16 +1,6 @@
-# Blow a Bubble
+# Bubz
 _Interactive Hand tracking app._  
 
 Live Demo: https://daveseidman.github.io/bubz/  
 
-Using MediaPipe's hand pose detection, we find "loops" created by users fingers. We then display a flattened bubble inside those loops and wait for user to "blow" the bubble by actually blowing (monitor microphone for input volume level). 
-
-
-### Current Status:
-✅ Hand Tracking  
-☑️ Loop Detection: works but should be generalized  
-✅ Basic 3D Scene & Camera Setup 
-❎ Geometry Manipulation: replace extruded shape with bubble shape  
-❎ Physics: bubbles should move naturally and possibly interact with hands 
-❎ Raymarching: this effect would be nice https://www.youtube.com/live/q2WcGi3Cr9w?  
-❎ Shaders: let's use meshTransmissionMaterial and incorporate the video stream in the environment map https://www.youtube.com/watch?v=tfVWCqO1hec  
+App uses MediaPipe's hand pose detection to find "loops" created by user's fingers, when enough audio is detected from the microphone (when the user blows) we create bubbles. Bubbles are made up of Balls randomly placed within any loops currently on screen. The balls are rigidbodies inside a physics engine and are attracted to each other and affected by a negative gravity. Balls get wrapped in a marching cubes component to give them the smooth appearance of Bubbles.

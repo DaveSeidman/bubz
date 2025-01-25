@@ -8,7 +8,7 @@ import Bubble from './Bubble'; // Import your Bubble component
 import plusImage from '../assets/images/plus.png';
 import { randomPointInPolygon } from '../utils';
 
-function Bubbles({ bubbles, setBubbles, loops, noiseThreshold, currentVolume, balls }) {
+export default function Bubbles({ bubbles, setBubbles, loops, noiseThreshold, currentVolume, balls }) {
   // const maxBubbleRate = 20;
   const lastBubbleTime = useRef(new Date().getTime());
   const texture = useTexture(plusImage);
@@ -114,5 +114,3 @@ function Bubbles({ bubbles, setBubbles, loops, noiseThreshold, currentVolume, ba
     </Physics>
   );
 }
-
-export default Bubbles;

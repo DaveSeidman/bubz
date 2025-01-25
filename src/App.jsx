@@ -4,9 +4,7 @@ import { Leva, useControls } from 'leva';
 import Scene from './Scene';
 import Webcam from './Webcam';
 import Bones from './Bones';
-// import useAudioMonitor from './AudioMonitor';
 import AudioMonitor from './AudioMonitor';
-
 import Tutorial from './Tutorial';
 
 function App() {
@@ -24,30 +22,20 @@ function App() {
 
   const [audioSource, setAudioSource] = useState(null); // New state for audio source
 
-  // const currentVolume = useAudioMonitor(audioSource);
   const videoElementRef = useRef();
-  const {
-    bones,
-    balls,
-    blobs,
-  } = useControls({
-    bones: { value: true },
-    balls: { value: false },
-    blobs: { value: true },
-  });
+  const { bones, balls, blobs } = useControls({ bones: { value: true }, balls: { value: false }, blobs: { value: true } });
 
-  const [noiseThreshold, setNoiseThreshold] = useState(0.5);
+  const [noiseThreshold, setNoiseThreshold] = useState(0.2);
   const mcResolution = 100;
   const mcPolyCount = 20000;
 
   return (
     <div className="app">
-
       <div
+        // TODO: use (innerHeight - 0) on mobile to save space
+        // all elements in this get scaled based on window size and camera dimensions
         className="container"
-        style={{
-          transform: `translate(-50%, -50%) scale(${(innerHeight - 150) / height})`, // TODO: use (innerHeight - 0) on mobile to save space
-        }}
+        style={{ transform: `translate(-50%, -50%) scale(${(innerHeight - 150) / height})` }}
       >
         <Webcam
           setWidth={setWidth}
@@ -64,7 +52,6 @@ function App() {
           handLandmarker={handLandmarker}
           setHandLandmarker={setHandLandmarker}
           setWebcamRunning={setWebcamRunning}
-          // setAudioSource={setAudioSource}
           width={width}
           height={height}
           loops={loops}
@@ -86,7 +73,6 @@ function App() {
           mcResolution={mcResolution}
           mcPolyCount={mcPolyCount}
         />
-
       </div>
       <div className="ui">
         <h1 className="ui-header">bubz!</h1>
@@ -97,13 +83,6 @@ function App() {
           <a target="daveseidman" href="https://daveseidman.com">Dave Seidman</a>
         </div>
       </div>
-      <Tutorial
-        step={step}
-        setStep={setStep}
-        webcamRunning={webcamRunning}
-        loops={loops}
-        bubbles={bubbles}
-      />
       <AudioMonitor
         handLandmarker={handLandmarker}
         webcamRunning={webcamRunning}
@@ -113,34 +92,14 @@ function App() {
         noiseThreshold={noiseThreshold}
         setNoiseThreshold={setNoiseThreshold}
       />
+      <Tutorial
+        step={step}
+        setStep={setStep}
+        webcamRunning={webcamRunning}
+        loops={loops}
+        bubbles={bubbles}
+      />
       <Leva collapsed />
-
-      {/* {handLandmarker && (
-        <div className="controls">
-          <div
-            className={`volume ${webcamRunning ? '' : 'hidden'}`}
-            onPointerDown={(e) => {
-              const { left, width } = e.currentTarget.getBoundingClientRect();
-              console.log('pointerdown', (e.clientX - left) / width);
-              setNoiseThreshold((e.clientX - left) / width);
-            }}
-            onPointerMove={(e) => {
-              // console.log('pointermove', e.clientX);
-            }}
-          >
-            <div
-              className="volume-amount"
-              style={{ width: `${currentVolume * 100}%` }}
-            />
-            <div
-              className="volume-threshold"
-              style={{ left: `${noiseThreshold * 100}%` }}
-            >
-              Min
-            </div>
-          </div>
-        </div>
-      )} */}
     </div>
   );
 }

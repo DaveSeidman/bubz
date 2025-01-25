@@ -12,6 +12,7 @@ export default function Webcam({ setWidth, setHeight, setAudioSource, webcamRunn
     setWidth(width);
     setHeight(height);
     videoElementRef.current.srcObject = stream.current;
+    // TODO: this flattens out the volume bar :(
     // videoElementRef.current.volume = 0.0;
     // videoElementRef.current.muted = true;
     setAudioSource(stream.current);
