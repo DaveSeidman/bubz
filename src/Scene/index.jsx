@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Canvas } from '@react-three/fiber';
 import { PerspectiveCamera } from '@react-three/drei';
 import { Bloom, EffectComposer, SSAO } from '@react-three/postprocessing';
@@ -13,7 +13,7 @@ export default function Scene({ stats, loops, bubbles, setBubbles, width, height
       className="scene"
       style={{ width, height }}
       gl={{ alpha: true, stencil: false, depth: true, antialias: false }}
-      dpr={0.5}
+      dpr={1}
     // shadows
     // onCreated={(state) => (state.gl.toneMappingExposure = 2)}
     >

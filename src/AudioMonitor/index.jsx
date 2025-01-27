@@ -1,20 +1,29 @@
-// AudioMonitor Component
 import React, { useRef, useEffect } from 'react';
 import './index.scss';
 
-export default function AudioMonitor({ handLandmarker, webcamRunning, currentVolume, setCurrentVolume, noiseThreshold, setNoiseThreshold, audioSource }) {
+export default function AudioMonitor({
+  handLandmarker,
+  webcamRunning,
+  currentVolume,
+  setCurrentVolume,
+  noiseThreshold,
+  setNoiseThreshold,
+  audioSource,
+}) {
   const audioContextRef = useRef(null);
   const analyserRef = useRef(null);
   const animationFrameIdRef = useRef(null);
   const pointer = useRef({ x: 0, down: false });
   const volumeRef = useRef();
+
   useEffect(() => {
     if (!audioSource) return;
 
     const initializeAudio = () => {
       if (audioContextRef.current) audioContextRef.current.close();
 
-      const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+      const audioContext = new (window.AudioContext
+        || window.webkitAudioContext)();
       const analyser = audioContext.createAnalyser();
       analyser.fftSize = 256;
 
@@ -31,7 +40,8 @@ export default function AudioMonitor({ handLandmarker, webcamRunning, currentVol
         analyser.getByteFrequencyData(dataArray);
         const sum = dataArray.reduce((a, b) => a + b, 0);
         const average = sum / bufferLength;
-        setCurrentVolume(average / 255);
+        setCurrentVolume((average / 255) * 5);
+        // setCurrentVolume(1);
         animationFrameIdRef.current = requestAnimationFrame(monitorVolume);
       };
 
@@ -52,7 +62,6 @@ export default function AudioMonitor({ handLandmarker, webcamRunning, currentVol
     <div className="audio">
       <div
         ref={volumeRef}
-        // TODO: use firstloop to show or hide this instead of webcamrunning
         className={`audio-volume ${webcamRunning ? '' : 'hidden'}`}
         onPointerDown={(e) => {
           const { left, width } = e.currentTarget.getBoundingClientRect();
@@ -70,16 +79,23 @@ export default function AudioMonitor({ handLandmarker, webcamRunning, currentVol
           }
         }}
       >
-        <div
-          className="audio-volume-amount"
-          style={{ width: `${(currentVolume * 100)}%` }}
-        />
+        <div className="audio-volume-lights">
+          {Array.from({ length: 10 }).map((_, i) => {
+            const fill = (currentVolume * 10) - i; // ex: if currentVolume = 0.55, fill first five completely and the sixth to 0.5
+            const opacity = Math.min(1, Math.max(0, fill));
+            return (
+              <span
+                key={i}
+                className={`audio-volume-lights-light ${i < 3 ? 'green' : i < 7 ? 'yellow' : 'orange'}`}
+                style={{ opacity }}
+              />
+            );
+          })}
+        </div>
         <div
           className="audio-volume-threshold"
-          style={{ left: `${noiseThreshold * 100}%` }}
-        >
-          Min
-        </div>
+          style={{ left: `${Math.round(noiseThreshold * 10) * 10}%` }}
+        />
       </div>
     </div>
   );

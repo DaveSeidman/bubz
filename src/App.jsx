@@ -17,7 +17,7 @@ function App() {
   const [bubbles, setBubbles] = useState([]);
 
   const [width, setWidth] = useState(0);
-  const [height, setHeight] = useState(0);
+  const [height, setHeight] = useState(640);
   const [currentVolume, setCurrentVolume] = useState(0);
 
   const [audioSource, setAudioSource] = useState(null); // New state for audio source

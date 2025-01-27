@@ -34,8 +34,8 @@
 
     .threshold {
       position: absolute;
-      bottom: 0;
-      // bottom: .25rem;
+      // bottom: 0;
+      bottom: 1.5rem;
       height: 50px;
 
       p {
@@ -50,7 +50,7 @@
       img {
         position: absolute;
         height: calc(100% - 25px);
-        top: -0px;
+        top: 20px;
         z-index: 2;
       }
     }
