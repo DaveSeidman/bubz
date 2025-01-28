@@ -40,7 +40,7 @@ export default function AudioMonitor({
         analyser.getByteFrequencyData(dataArray);
         const sum = dataArray.reduce((a, b) => a + b, 0);
         const average = sum / bufferLength;
-        setCurrentVolume((average / 255) * 5);
+        setCurrentVolume((average / 255) * 2.5);
         // setCurrentVolume(1);
         animationFrameIdRef.current = requestAnimationFrame(monitorVolume);
       };
@@ -86,9 +86,13 @@ export default function AudioMonitor({
             return (
               <span
                 key={i}
-                className={`audio-volume-lights-light ${i < 3 ? 'green' : i < 7 ? 'yellow' : 'orange'}`}
+                className="audio-volume-lights-light"
                 style={{ opacity }}
-              />
+              >
+                <span
+                  className={`${i < 3 ? 'green' : i < 7 ? 'yellow' : 'orange'}`}
+                />
+              </span>
             );
           })}
         </div>

@@ -1,6 +1,6 @@
 import React, { useRef, useEffect, useState } from 'react';
 import { HandLandmarker, FilesetResolver } from '@mediapipe/tasks-vision';
-import { distance, findLoops, getColors, jointConnections } from '../../utils';
+import { distance, findLoops, jointConnections } from '../../utils';
 import './index.scss';
 
 export default function Bones({ handleFrameRef, bones, setLoops, handLandmarker, loops, setHandLandmarker, videoElementRef, width, height }) {
@@ -10,15 +10,12 @@ export default function Bones({ handleFrameRef, bones, setLoops, handLandmarker,
   const minArea = 0.003;
   const canvasRef = useRef(null);
   const ctx = useRef(null);
-  // const stream = useRef();
-  // const handleFrameRef = useRef();
   const lastTimestamp = useRef(0);
   const touchingThreshold = 0.1; // TODO: base this on the size of the hand
   const loopIdCounter = useRef(1);
   const confirmationThreshold = 3; // Number of consecutive frames before assigning an ID
   const missingFramesThreshold = 3; // Number of frames before removing a loop
   const colorAmount = 6;
-  const colors = getColors(colorAmount);
 
   const options = {
     baseOptions: {
@@ -133,29 +130,18 @@ export default function Bones({ handleFrameRef, bones, setLoops, handLandmarker,
 
   useEffect(() => {
     if (!ctx.current) return;
-
     const { width, height } = canvasRef.current;
-    ctx.current.lineWidth = 2;
-    ctx.current.font = '16px Courier';
-    ctx.current.textAlign = 'center';
-    ctx.current.textBaseline = 'middle';
+    ctx.current.lineWidth = 5;
+    ctx.current.fillStyle = 'rgba(255, 255, 255, .33)';
     loops.forEach(({ id, points, center, confirmed }) => {
       ctx.current.beginPath();
-      ctx.current.strokeStyle = colors[id % colorAmount];
-      ctx.current.fillStyle = colors[id % colorAmount];
       ctx.current.moveTo(points[0].x * width, points[0].y * height);
       points.forEach((point) => {
         ctx.current.lineTo(point.x * width, point.y * height);
       });
       ctx.current.closePath();
       ctx.current.stroke();
-      if (confirmed) {
-        ctx.current.save();
-        ctx.current.translate(center.x * width, center.y * height);
-        ctx.current.scale(-1, 1);
-        ctx.current.fillText(id, 0, 0);
-        ctx.current.restore();
-      }
+      ctx.current.fill();
     });
   }, [loops]);
 

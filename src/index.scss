@@ -9,6 +9,8 @@ html, body, #root {
   background: #333;
   font-size: 16px;
   margin: 0;
+  overflow: hidden;
+  overscroll-behavior-x: none;
 
   * {
     font-family: 'Quicksand';
@@ -21,10 +23,10 @@ html, body, #root {
       top: 50%;
       left: 50%;
 
+      // TODO: put these in individual components
       canvas, video {
         position: absolute;
         transform: scaleX(-100%);
-      //   transition: opacity .5s, visibility .5s;
       }
     }
 

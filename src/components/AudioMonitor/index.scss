@@ -16,9 +16,9 @@
     bottom: 20px;
     left: 50%;
     transform: translateX(-50%);
-    width: 160px;
+    width: 120px;
     border: 1px solid white;
-    border-radius: 4px;
+    border-radius: 2px;
     height: 20px;
     transition: visibility 1s, opacity 1s;
 
@@ -31,19 +31,27 @@
 
       &-light {
         flex: 1;
-        margin-right: 3px;
-        margin-top: 3px;
-        height: calc(100% - 6px);
-        border: none;
-        border-radius: 3px;
+        // margin-right: 3px;
+        margin-top: 2px;
+        height: calc(100% - 4px);
+        // border: none;
+        // border-radius: 3px;
 
         &:first-child {
-          margin-left: 3px;
+          // margin-left: 3px;
         }
-
-        &.green { background: $green; }
-        &.yellow { background: $yellow; }
-        &.orange { background: $orange; }
+        // position: relative;
+        & > span {
+          display: block;
+          width: calc(100% - 3px);
+          margin-left: 1px;
+          height: 100%;
+          border: none;
+          border-radius: 1px;
+          &.green { background: $green; }
+          &.yellow { background: $yellow; }
+          &.orange { background: $orange; }
+        }
       }
     }
 

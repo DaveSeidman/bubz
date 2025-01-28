@@ -34,7 +34,6 @@
 
     .threshold {
       position: absolute;
-      // bottom: 0;
       bottom: 1.5rem;
       height: 50px;
 
@@ -45,12 +44,11 @@
         white-space: nowrap;
         transform: translate(-50%, -50%);
         font-size: 12px;
-        // line-height: 30px;
       }
       img {
         position: absolute;
-        height: calc(100% - 25px);
-        top: 20px;
+        height: calc(100% - 20px);
+        top: 28px;
         z-index: 2;
       }
     }
