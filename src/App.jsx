@@ -38,26 +38,27 @@ function App() {
         style={{ transform: `translate(-50%, -50%) scale(${(innerHeight - 150) / height})` }}
       >
         <Webcam
-          setWidth={setWidth}
-          setHeight={setHeight}
           webcamRunning={webcamRunning}
-          setWebcamRunning={setWebcamRunning}
-          setAudioSource={setAudioSource}
           videoElementRef={videoElementRef}
           handleframeRef={handleFrameRef}
+          setWebcamRunning={setWebcamRunning}
+          setAudioSource={setAudioSource}
+          setWidth={setWidth}
+          setHeight={setHeight}
         />
         <Bones
           handleFrameRef={handleFrameRef}
           bones={bones}
           handLandmarker={handLandmarker}
-          setHandLandmarker={setHandLandmarker}
-          setWebcamRunning={setWebcamRunning}
           width={width}
           height={height}
           loops={loops}
-          setLoops={setLoops}
           webcamRunning={webcamRunning}
           videoElementRef={videoElementRef}
+          setHandLandmarker={setHandLandmarker}
+          setWebcamRunning={setWebcamRunning}
+          setLoops={setLoops}
+
         />
         <Scene
           loops={loops}
@@ -66,16 +67,16 @@ function App() {
           balls={balls}
           blobs={blobs}
           bubbles={bubbles}
-          setBubbles={setBubbles}
           currentVolume={currentVolume}
           noiseThreshold={noiseThreshold}
           videoElement={videoElementRef.current}
           mcResolution={mcResolution}
           mcPolyCount={mcPolyCount}
+          setBubbles={setBubbles}
         />
       </div>
       <div className="ui">
-        <h1 className="ui-header">bubz!</h1>
+        <h1 className="ui-header">bubz! 🫧</h1>
         <div className="ui-footer">
           <span>Another</span>
           <a target="github" href="https://github.com/DaveSeidman/bubz">Digital Stunt</a>
@@ -88,8 +89,8 @@ function App() {
         webcamRunning={webcamRunning}
         audioSource={audioSource}
         currentVolume={currentVolume}
-        setCurrentVolume={setCurrentVolume}
         noiseThreshold={noiseThreshold}
+        setCurrentVolume={setCurrentVolume}
         setNoiseThreshold={setNoiseThreshold}
       />
       <Tutorial

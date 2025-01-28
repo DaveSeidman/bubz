@@ -7,6 +7,8 @@ export default function Bones({ handleFrameRef, bones, setLoops, handLandmarker,
   const basePath = import.meta.env.BASE_URL || '/';
 
   const [hands, setHands] = useState([]);
+  const previousHands = useRef([]); // Store previous hands for smoothing
+  const previousLoops = useRef([]); // Store previous loops for smoothing
   const minArea = 0.003;
   const canvasRef = useRef(null);
   const ctx = useRef(null);
@@ -23,6 +25,17 @@ export default function Bones({ handleFrameRef, bones, setLoops, handLandmarker,
     },
     runningMode: 'VIDEO',
     numHands: 2,
+  };
+
+  // Smooth positions by averaging with the previous frame
+  const smoothPositions = (current, previous, smoothingFactor = 0.25) => {
+    if (!previous || current.length !== previous.length) {
+      return current; // No smoothing if dimensions don't match
+    }
+    return current.map((point, i) => ({
+      x: previous[i].x * smoothingFactor + point.x * (1 - smoothingFactor),
+      y: previous[i].y * smoothingFactor + point.y * (1 - smoothingFactor),
+    }));
   };
 
   // Initialize Hand Landmarker
@@ -46,8 +59,16 @@ export default function Bones({ handleFrameRef, bones, setLoops, handLandmarker,
 
     ctx.current.clearRect(0, 0, width, height);
 
-    // Draw joints and bones first
-    hands.forEach((landmarks) => {
+    // Smooth the hand positions
+    const smoothedHands = hands.map((hand, index) => {
+      const previousHand = previousHands.current[index];
+      return smoothPositions(hand, previousHand);
+    });
+
+    previousHands.current = smoothedHands; // Store smoothed hands for the next frame
+
+    // Draw joints and bones
+    smoothedHands.forEach((landmarks) => {
       ctx.current.strokeStyle = 'white';
       ctx.current.lineWidth = 1;
       jointConnections.forEach(([start, end]) => {
@@ -69,8 +90,10 @@ export default function Bones({ handleFrameRef, bones, setLoops, handLandmarker,
       });
     });
 
-    const nextLoops = findLoops({ hands, touchingThreshold, minArea });
+    // Detect loops using smoothed positions
+    const nextLoops = findLoops({ hands: smoothedHands, touchingThreshold, minArea });
 
+    // Update loops state
     setLoops((prevLoops) => {
       const updatedLoops = [];
       const unmatchedPrevLoops = [...prevLoops];
@@ -116,24 +139,15 @@ export default function Bones({ handleFrameRef, bones, setLoops, handLandmarker,
       unmatchedPrevLoops.forEach((prevLoop) => {
         prevLoop.missingFrames = (prevLoop.missingFrames || 0) + 1;
         if (prevLoop.missingFrames <= missingFramesThreshold) {
-          // Keep rendering with interpolation or last known points
-          const interpolatedLoop = {
-            ...prevLoop,
-            missingFrames: prevLoop.missingFrames,
-            points: prevLoop.points.map((point) => ({
-              x: point.x,
-              y: point.y,
-            })),
-          };
-          updatedLoops.push(interpolatedLoop);
+          updatedLoops.push(prevLoop);
         }
       });
 
+      previousLoops.current = updatedLoops; // Store updated loops for the next frame
       return updatedLoops;
     });
   }, [hands]);
 
-  // Render Loops
   useEffect(() => {
     if (!ctx.current) return;
     const { width, height } = canvasRef.current;
@@ -176,12 +190,12 @@ export default function Bones({ handleFrameRef, bones, setLoops, handLandmarker,
     videoElementRef.current.requestVideoFrameCallback((now, metadata) => {
       handleFrameRef.current(now, metadata);
     });
-  }, [videoElementRef])
+  }, [videoElementRef]);
 
   useEffect(() => {
     canvasRef.current.width = width;
     canvasRef.current.height = height;
-  }, [width, height])
+  }, [width, height]);
 
   return (
     <div className="bones">
