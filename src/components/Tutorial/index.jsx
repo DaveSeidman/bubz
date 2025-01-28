@@ -28,6 +28,7 @@ export default function Tutorial({ webcamRunning, loops, bubbles }) {
             autoPlay
             muted
             loop
+            playsInline
             src={bonesVideo}
           />
           <p className='pulse'>Make loops with your fingers</p>
