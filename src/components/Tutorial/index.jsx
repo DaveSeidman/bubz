@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import loopsVideo from '../assets/videos/hand-loops.webm'
-import dragIcon from '../assets/images/drag.svg';
+import loopsVideo from '../../assets/videos/hand-loops.webm'
+import dragIcon from '../../assets/images/drag.svg';
 import './index.scss';
 
 export default function Tutorial({ webcamRunning, loops, bubbles }) {

@@ -1,11 +1,11 @@
 // App.js
 import React, { useRef, useState } from 'react';
 import { Leva, useControls } from 'leva';
-import Scene from './Scene';
-import Webcam from './Webcam';
-import Bones from './Bones';
-import AudioMonitor from './AudioMonitor';
-import Tutorial from './Tutorial';
+import AudioMonitor from './components/AudioMonitor';
+import Tutorial from './components/Tutorial';
+import Bones from './components/Bones';
+import Webcam from './components/Webcam';
+import Scene from './components/Scene';
 
 function App() {
   const [step, setStep] = useState(0);

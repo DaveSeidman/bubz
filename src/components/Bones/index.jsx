@@ -1,6 +1,6 @@
 import React, { useRef, useEffect, useState } from 'react';
 import { HandLandmarker, FilesetResolver } from '@mediapipe/tasks-vision';
-import { distance, findLoops, getColors, jointConnections } from '../utils';
+import { distance, findLoops, getColors, jointConnections } from '../../utils';
 import './index.scss';
 
 export default function Bones({ handleFrameRef, bones, setLoops, handLandmarker, loops, setHandLandmarker, videoElementRef, width, height }) {
