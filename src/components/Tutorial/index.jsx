@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import bonesVideo from '../../assets/videos/bones.webm'
+import bonesVideo from '../../assets/videos/bones.gif'
 import dragIcon from '../../assets/images/drag.svg';
 import './index.scss';
 
@@ -24,13 +24,14 @@ export default function Tutorial({ webcamRunning, loops, bubbles }) {
       )}
       {(webcamRunning && !firstLoop) && (
         <div className="tutorial-step">
-          <video
+          <img src={bonesVideo} alt="bones" />
+          {/* <video
             autoPlay
             muted
             loop
             playsInline
             src={bonesVideo}
-          />
+          /> */}
           <p className='pulse'>Make loops with your fingers</p>
         </div>
       )}
