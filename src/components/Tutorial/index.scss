@@ -12,10 +12,10 @@
     100% { opacity: 0 }
   }
   @keyframes wiggle {
-    0% { transform: translateX(0) }
-    10% { transform: translateX(.5rem) }
-    20% { transform: translateX(-.5rem) }
-    30% { transform: translateX(0rem) }
+    0% { transform: translateX(-50%) }
+    10% { transform: translateX(calc(-50% + .5rem)) }
+    20% { transform: translateX(calc(-50% - .5rem)) }
+    30% { transform: translateX(-50%) }
   }
   &-step {
     position: absolute;
@@ -54,7 +54,7 @@
     }
 
     video {
-      width: 300px;
+      width: 430px;
     }
   }
 

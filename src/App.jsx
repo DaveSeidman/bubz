@@ -76,7 +76,7 @@ function App() {
         />
       </div>
       <div className="ui">
-        <h1 className="ui-header">bubz! 🫧</h1>
+        <h1 className="ui-header">🫧 bubz!</h1>
         <div className="ui-footer">
           <span>Another</span>
           <a target="github" href="https://github.com/DaveSeidman/bubz">Digital Stunt</a>

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import loopsVideo from '../../assets/videos/hand-loops.webm'
+import bonesVideo from '../../assets/videos/bones.webm'
 import dragIcon from '../../assets/images/drag.svg';
 import './index.scss';
 
@@ -28,7 +28,7 @@ export default function Tutorial({ webcamRunning, loops, bubbles }) {
             autoPlay
             muted
             loop
-            src={loopsVideo}
+            src={bonesVideo}
           />
           <p className='pulse'>Make loops with your fingers</p>
         </div>
@@ -37,9 +37,8 @@ export default function Tutorial({ webcamRunning, loops, bubbles }) {
         <div className="tutorial-step">
           <div className="threshold">
             <img className="wiggle" src={dragIcon}></img>
-            <p className='pulse'>adjust noise threshold</p>
           </div>
-          <p>Blow to start making bubbles!</p>
+          <p>adjust noise threshold and blow to start making bubbles!</p>
         </div>
       )}
     </div>
