@@ -1,0 +1,45 @@
+.info {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+
+  &-body, &-button {
+    pointer-events: all;
+  }
+
+  &-body {
+    transition: opacity .5s, visibility .5s;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 400px;
+    height: 300px;
+    background: rgba(255, 255, 255, .25);
+    backdrop-filter: blur(3px);
+    transform: translate(-50%, -50%);
+    padding: 20px 40px;
+    border-radius: 4px;
+    box-shadow: 0px 10px 3px rgba(0, 0, 0, .25);
+
+    // text-justify: full;
+    p, a {
+      color: white;
+      line-height: 24px;
+    }
+  }
+
+  &-button {
+    cursor: pointer;
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    margin: 1rem;
+    background: none;
+    border: none;
+    width: 30px;
+    height: 30px;
+    text-align: center;
+    color: white;
+  }
+
+}

@@ -3,6 +3,7 @@ import React, { useRef, useState } from 'react';
 import { Leva, useControls } from 'leva';
 import AudioMonitor from './components/AudioMonitor';
 import Tutorial from './components/Tutorial';
+import Info from './components/Info';
 import Bones from './components/Bones';
 import Webcam from './components/Webcam';
 import Scene from './components/Scene';
@@ -26,6 +27,7 @@ function App() {
   const { bones, balls, blobs } = useControls({ bones: { value: true }, balls: { value: false }, blobs: { value: true } });
 
   const [noiseThreshold, setNoiseThreshold] = useState(0.2);
+  const [showInfo, setShowInfo] = useState(false);
   const mcResolution = 100;
   const mcPolyCount = 20000;
 
@@ -99,6 +101,10 @@ function App() {
         webcamRunning={webcamRunning}
         loops={loops}
         bubbles={bubbles}
+      />
+      <Info
+        showInfo={showInfo}
+        setShowInfo={setShowInfo}
       />
       <Leva collapsed />
     </div>

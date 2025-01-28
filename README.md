@@ -1,5 +1,5 @@
 # Bubz
-_Interactive Hand tracking app._  
+_Interactive hand tracking app_  
 
 Live Demo: https://daveseidman.github.io/bubz/  
 
@@ -9,8 +9,8 @@ App uses MediaPipe's hand pose detection to find "loops" created by user's finge
 ### TODO:
 
 - Fix blinking bones
-- Re-record bones tutorial
 - Record blowing tutorial?
 - Add recording to Readme
+- Timeout on Tutorial step one to prevent skipping
 - Improve marching cubes performance (WebGPU?)
 - Finish volume meter

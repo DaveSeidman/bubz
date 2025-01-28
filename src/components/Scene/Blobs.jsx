@@ -45,6 +45,7 @@ export default function Blobs({ bubbles, mcResolution, mcPolyCount }) {
         // opacity={0.1}
         color={0xeeeeee}
         metalness={0.25}
+        samples={4}
       />
     </MarchingCubes>
   );
