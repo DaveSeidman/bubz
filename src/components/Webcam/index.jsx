@@ -25,6 +25,7 @@ export default function Webcam({ setWidth, setHeight, setAudioSource, webcamRunn
         ref={videoElementRef}
         className={`webcam-video ${webcamRunning ? '' : 'hidden'}`}
         autoPlay
+        playsInline
         muted
       />
       <button
