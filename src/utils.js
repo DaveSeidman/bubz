@@ -40,14 +40,6 @@ const pairsAndLoops = [
   { pairs: [[25, 16]], loop: [23, 24, 25, 16, 15, 14, 13, 34] },
 ];
 
-export const getColors = (colorAmount) => {
-  const colors = Array.from({ length: colorAmount }, (_, i) => {
-    const hue = (i * (360 / colorAmount)) % 360;
-    return `hsl(${hue}, 100%, 50%)`;
-  });
-  return colors;
-};
-
 export const distance = (point1, point2) => {
   const dx = point2.x - point1.x;
   const dy = point2.y - point1.y;

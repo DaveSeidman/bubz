@@ -15,7 +15,6 @@ export default function Bones({ handleFrameRef, bones, setLoops, handLandmarker,
   const loopIdCounter = useRef(1);
   const confirmationThreshold = 3; // Number of consecutive frames before assigning an ID
   const missingFramesThreshold = 3; // Number of frames before removing a loop
-  const colorAmount = 6;
 
   const options = {
     baseOptions: {
@@ -29,9 +28,7 @@ export default function Bones({ handleFrameRef, bones, setLoops, handLandmarker,
   // Initialize Hand Landmarker
   useEffect(() => {
     const initializeHandLandmarker = async () => {
-      const vision = await FilesetResolver.forVisionTasks(
-        `${basePath}/wasm`,
-      );
+      const vision = await FilesetResolver.forVisionTasks(`${basePath}/wasm`);
       const handLandmarkerInstance = await HandLandmarker.createFromOptions(vision, options);
       setHandLandmarker(handLandmarkerInstance);
     };
@@ -119,7 +116,16 @@ export default function Bones({ handleFrameRef, bones, setLoops, handLandmarker,
       unmatchedPrevLoops.forEach((prevLoop) => {
         prevLoop.missingFrames = (prevLoop.missingFrames || 0) + 1;
         if (prevLoop.missingFrames <= missingFramesThreshold) {
-          updatedLoops.push(prevLoop);
+          // Keep rendering with interpolation or last known points
+          const interpolatedLoop = {
+            ...prevLoop,
+            missingFrames: prevLoop.missingFrames,
+            points: prevLoop.points.map((point) => ({
+              x: point.x,
+              y: point.y,
+            })),
+          };
+          updatedLoops.push(interpolatedLoop);
         }
       });
 
@@ -127,31 +133,35 @@ export default function Bones({ handleFrameRef, bones, setLoops, handLandmarker,
     });
   }, [hands]);
 
-
+  // Render Loops
   useEffect(() => {
     if (!ctx.current) return;
     const { width, height } = canvasRef.current;
     ctx.current.lineWidth = 5;
-    ctx.current.fillStyle = 'rgba(255, 255, 255, .33)';
-    loops.forEach(({ id, points, center, confirmed }) => {
-      ctx.current.beginPath();
-      ctx.current.moveTo(points[0].x * width, points[0].y * height);
-      points.forEach((point) => {
-        ctx.current.lineTo(point.x * width, point.y * height);
-      });
-      ctx.current.closePath();
-      ctx.current.stroke();
-      ctx.current.fill();
+
+    loops.forEach(({ points, confirmed, missingFrames }) => {
+      if (confirmed || missingFrames > 0) {
+        // Render even if missingFrames > 0
+        ctx.current.fillStyle = `rgba(255, 255, 255, ${missingFrames > 0 ? 0.2 : 0.33})`; // Dim loops with missing frames
+        ctx.current.beginPath();
+        ctx.current.moveTo(points[0].x * width, points[0].y * height);
+        points.forEach((point) => {
+          ctx.current.lineTo(point.x * width, point.y * height);
+        });
+        ctx.current.closePath();
+        ctx.current.stroke();
+        ctx.current.fill();
+      }
     });
   }, [loops]);
 
+  // Frame Handling
   const handleFrame = async (now) => {
     let timestamp = now * 1000;
     if (timestamp <= lastTimestamp.current) {
       timestamp = lastTimestamp.current + 1;
     }
     lastTimestamp.current = timestamp;
-
     const results = await handLandmarker.detectForVideo(videoElementRef.current, timestamp);
     setHands(results.landmarks.length ? results.landmarks : []);
 
@@ -167,7 +177,6 @@ export default function Bones({ handleFrameRef, bones, setLoops, handLandmarker,
       handleFrameRef.current(now, metadata);
     });
   }, [videoElementRef])
-
 
   useEffect(() => {
     canvasRef.current.width = width;
