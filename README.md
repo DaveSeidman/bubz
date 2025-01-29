@@ -11,5 +11,7 @@ This app uses [MediaPipe's hand tracking](https://ai.google.dev/edge/mediapipe/s
 
 **TODO:**  
 
-- Timeout on Tutorial step one to prevent skipping
+- Enable bubble interaction, "pushing" and "popping"
 - Improve marching cubes performance (WebGPU?)
+- Timeout on Tutorial step one to prevent skipping
+- Prevent echo (video needs audio to detect volume)
