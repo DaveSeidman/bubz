@@ -16,6 +16,7 @@
     10% { transform: translateX(calc(-50% + .5rem)) }
     20% { transform: translateX(calc(-50% - .5rem)) }
     30% { transform: translateX(-50%) }
+    100% { transform: translateX(-50%) }
   }
   &-step {
     position: absolute;
