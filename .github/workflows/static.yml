@@ -2,10 +2,14 @@
 name: Build and Deploy to GitHub Pages
 
 on:
+  # Runs on pushes to the main branch
   push:
     branches: ["main"]
+
+  # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
+# Set permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
 permissions:
   contents: read
   pages: write
@@ -14,6 +18,7 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -29,14 +34,10 @@ jobs:
       - name: Build project
         run: npm run build
 
-      - name: Debug Build Output
-        run: ls -lah ./dist  # Ensure the directory exists and has files
-
       - name: Upload artifact
-        uses: actions/upload-artifact@v4  # Use v4
+        uses: actions/upload-artifact@v4
         with:
-          name: github-pages  # Artifact name MUST match deploy step
-          path: './dist'  # Ensure this matches the actual build output
+          path: './dist'  # Adjust if your build output directory is different
 
   deploy:
     needs: build
@@ -45,15 +46,6 @@ jobs:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
-      - name: Download artifact
-        uses: actions/download-artifact@v4  # Ensure artifact exists
-        with:
-          name: github-pages
-          path: ./dist  # Extract files to the correct location
-
-      - name: Debug Downloaded Artifact
-        run: ls -lah ./dist  # Ensure files exist before deploying
-
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v1
