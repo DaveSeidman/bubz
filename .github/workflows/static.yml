@@ -14,7 +14,6 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -30,10 +29,14 @@ jobs:
       - name: Build project
         run: npm run build
 
+      - name: Debug Build Output
+        run: ls -lah ./dist  # Ensure the directory exists and has files
+
       - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
+        uses: actions/upload-artifact@v4  # Use v4
         with:
-          path: './dist'  # Ensure this matches your actual output directory
+          name: github-pages  # Artifact name MUST match deploy step
+          path: './dist'  # Ensure this matches the actual build output
 
   deploy:
     needs: build
@@ -42,6 +45,15 @@ jobs:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
+      - name: Download artifact
+        uses: actions/download-artifact@v4  # Ensure artifact exists
+        with:
+          name: github-pages
+          path: ./dist  # Extract files to the correct location
+
+      - name: Debug Downloaded Artifact
+        run: ls -lah ./dist  # Ensure files exist before deploying
+
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v1  # No need to specify artifact_name
+        uses: actions/deploy-pages@v1
