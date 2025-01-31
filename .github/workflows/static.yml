@@ -30,13 +30,12 @@ jobs:
         run: npm run build
 
       - name: Debug Build Output
-        run: ls -lah ./dist  # Check if the build output directory exists
+        run: ls -lah ./dist  # Ensure build files exist
 
-      - name: Upload Build Artifact
-        uses: actions/upload-artifact@v4.6.0
+      - name: Upload GitHub Pages Artifact
+        uses: actions/upload-pages-artifact@v1
         with:
-          name: github-pages
-          path: ./dist
+          path: ./dist  # Required for GitHub Pages deployment
 
   deploy:
     needs: build
@@ -44,21 +43,6 @@ jobs:
     environment:
       name: github-pages
     steps:
-      - name: List Available Artifacts (Before Download)
-        run: |
-          echo "Checking available artifacts..."
-          curl -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
-               "https://api.github.com/repos/${{ github.repository }}/actions/runs/${{ github.run_id }}/artifacts" | jq '.'
-
-      - name: Download Build Artifact
-        uses: actions/download-artifact@v4.1.8
-        with:
-          name: github-pages
-          path: ./dist
-
-      - name: Debug Downloaded Artifact
-        run: ls -lah ./dist  # Verify files exist before deployment
-
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v1
