@@ -1,10 +1,10 @@
-# Workflow for building and deploying your site to GitHub Pages
-name: Build and Deploy to GitHub Pages
+name: CI
 
 on:
   push:
-    branches: ["main"]
-  workflow_dispatch:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
 
 permissions:
   contents: read
@@ -14,9 +14,9 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
+
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
@@ -29,14 +29,11 @@ jobs:
       - name: Build project
         run: npm run build
 
-      - name: Debug Build Output
-        run: ls -lah ./dist  # Ensure build files exist
-
-      - name: Upload GitHub Pages Artifact
-        uses: actions/upload-pages-artifact@v1
+      - name: Upload Build Artifact
+        uses: actions/upload-pages-artifact@v3.0.1
         with:
-          path: ./dist  # Required for GitHub Pages deployment
-
+          path: ./dist
+    
   deploy:
     needs: build
     runs-on: ubuntu-latest
@@ -45,4 +42,4 @@ jobs:
     steps:
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v1
+        uses: actions/deploy-pages@v4.0.5
