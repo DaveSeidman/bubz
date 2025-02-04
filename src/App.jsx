@@ -106,7 +106,7 @@ function App() {
         showInfo={showInfo}
         setShowInfo={setShowInfo}
       />
-      <Leva collapsed />
+      <Leva />
     </div>
   );
 }
